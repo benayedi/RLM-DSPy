@@ -1,0 +1,4 @@
+logs/*.log filter=lfs diff=lfs merge=lfs -text
+logs/*.json filter=lfs diff=lfs merge=lfs -text
+logs/*.pkl filter=lfs diff=lfs merge=lfs -text
+logs/*.txt filter=lfs diff=lfs merge=lfs -text
