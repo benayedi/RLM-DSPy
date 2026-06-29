@@ -7,7 +7,7 @@ Usage:
     lm = build_lm()
     dspy.configure(lm=lm)
 
-    retriever = FaissRetriever(index_pattern, embedding_fn)
+    retriever = FaissRetriever(server_url="http://localhost:8001")
     rlm, metrics = build_rlm_agent(retriever)
 
     result = rlm(question="Who invented the telephone?")
@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 import dspy
 from dotenv import load_dotenv
 
-from .signatures import BrowseCompSignature
+from .signatures import BrowseCompSignature, ChildRLMSignature
 from .tools import FaissRetriever
 
 load_dotenv()
@@ -79,6 +79,7 @@ def build_lm() -> dspy.LM:
         api_version=api_version,
         temperature=1.0,
         max_tokens=16000,
+        cache=False,
     )
 
 
@@ -86,7 +87,7 @@ def build_rlm_agent(
     retriever: FaissRetriever,
     depth: int = 0,
     max_depth: int = 5,
-    max_iterations: int = 25,
+    max_iterations: int = 20,
     metrics: RunMetrics | None = None,
     verbose: bool = False,
 ) -> tuple[dspy.RLM, RunMetrics]:
@@ -137,31 +138,93 @@ def build_rlm_agent(
 
     if depth < max_depth:
 
-        def delegate(sub_question: str, sub_context: str = "") -> str:
-            """Launch an independent child agent to answer a sub-question.
+        def delegate_batch(tasks: list[dict], mode: str = "extract") -> list[str]:
+            """Delegate multiple sub-tasks to child agents. Returns one answer per task.
 
-            Each delegate() has its own fresh retrieval session, letting you
-            investigate multiple clues without contaminating each other.
+            mode="extract": each child reads its task["context"] doc and extracts task["query"].
+                            Fast parallel execution — preferred for most multi-doc questions.
+            mode="orchestrate": each child is a full RLM that can reason iteratively.
+                                Use only for genuinely complex sub-tasks.
+
+            Task format:
+                {
+                    "query":        "specific extraction question",
+                    "context":      "<full document text from get_document()>",
+                    "doc_id":       "doc_id for tracking",
+                    "parent_query": "<the original question>",
+                }
+            """
+            import concurrent.futures
+
+            metrics.delegation_calls += len(tasks)
+            lm = dspy.settings.lm
+
+            if mode == "extract":
+                def extract_one(task: dict) -> str:
+                    prompt = (
+                        f"Parent question: {task.get('parent_query', '')}\n\n"
+                        f"Your task: {task['query']}\n\n"
+                        f"Document [doc_id={task.get('doc_id', '?')}]:\n"
+                        f"{task.get('context', '')[:60000]}\n\n"
+                        "Extract ONLY the exact value asked for (name, date, title, number). "
+                        "If not found in this document, say None."
+                    )
+                    response = lm(messages=[{"role": "user", "content": prompt}])
+                    return response[0] if isinstance(response, list) else str(response)
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(tasks), 8)) as ex:
+                    return list(ex.map(extract_one, tasks))
+
+            else:  # orchestrate — full child RLM per task
+                def orchestrate_one(task: dict) -> str:
+                    child_rlm = dspy.RLM(
+                        signature=ChildRLMSignature,
+                        tools=[],
+                        max_iterations=min(max_iterations, 8),
+                        verbose=verbose,
+                    )
+                    result = child_rlm(
+                        context=task.get("context", ""),
+                        query=task["query"],
+                    )
+                    return str(getattr(result, "answer", result))
+
+                return [orchestrate_one(t) for t in tasks]
+
+        tools.append(delegate_batch)
+
+        def delegate(sub_question: str, sub_context: str = "") -> str:
+            """Spawn an independent child RLM with its own fresh search session.
+
+            The child can search the corpus independently — results don't mix with
+            the parent's searches. Use for clues about different entities that would
+            contaminate each other if searched in the same session.
 
             Args:
-                sub_question: The specific sub-question to investigate.
-                sub_context:  Optional extra context string for the child agent.
+                sub_question: The specific sub-question for the child to investigate.
+                sub_context:  Optional hint or pre-fetched context for the child.
             Returns:
-                The child agent's answer as a string.
+                The child's answer as a string.
             """
             metrics.delegation_calls += 1
-            child_rlm, _ = build_rlm_agent(
-                retriever=retriever,
-                depth=depth + 1,
-                max_depth=max_depth,
-                max_iterations=max_iterations,
-                metrics=metrics,
+
+            def child_search_index(query: str, top_k: int = 10) -> list[dict]:
+                """Search the BrowseComp+ corpus for relevant passages."""
+                results = retriever.search_index(query, top_k=top_k)
+                metrics.retrieved_doc_ids.extend(r["doc_id"] for r in results)
+                return results
+
+            def child_get_document(doc_id: str) -> dict:
+                """Fetch the full text of a document by its doc_id."""
+                return retriever.get_document(doc_id)
+
+            child_rlm = dspy.RLM(
+                signature=ChildRLMSignature,
+                tools=[child_search_index, child_get_document],
+                max_iterations=min(max_iterations, 8),
                 verbose=verbose,
             )
-            question = sub_question
-            if sub_context:
-                question = f"{sub_context}\n\n{sub_question}"
-            result = child_rlm(question=question)
+            result = child_rlm(context=sub_context or "", query=sub_question)
             return str(getattr(result, "answer", result))
 
         tools.append(delegate)
@@ -180,7 +243,7 @@ def run_question(
     retriever: FaissRetriever,
     question: str,
     max_depth: int = 5,
-    max_iterations: int = 25,
+    max_iterations: int = 20,
     verbose: bool = False,
 ) -> tuple[str, RunMetrics]:
     """

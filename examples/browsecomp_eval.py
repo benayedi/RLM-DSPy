@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from rag import FaissRetriever, RunMetrics, build_lm, make_embedding_fn
+from rag import FaissRetriever, RunMetrics, build_lm
 from rag.agent import run_question
 
 load_dotenv()
@@ -158,7 +158,10 @@ def run_one(
     max_iterations: int = 25,
     max_depth: int = 5,
     verbose: bool = False,
+    timeout_s: int = 180,
 ) -> dict:
+    import concurrent.futures
+
     question = get_question(row)
     gold = get_gold_answer(row)
     gold_ids = get_gold_doc_ids(row)
@@ -167,13 +170,20 @@ def run_one(
     print(f"\n[Q{q_idx+1:03d}] {question[:100]}…")
 
     try:
-        predicted, metrics = run_question(
-            retriever=retriever,
-            question=question,
-            max_depth=max_depth,
-            max_iterations=max_iterations,
-            verbose=verbose,
-        )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(
+                run_question,
+                retriever=retriever,
+                question=question,
+                max_depth=max_depth,
+                max_iterations=max_iterations,
+                verbose=verbose,
+            )
+            predicted, metrics = future.result(timeout=timeout_s)
+    except concurrent.futures.TimeoutError:
+        print(f"  TIMEOUT after {timeout_s}s")
+        metrics = RunMetrics(latency_s=float(timeout_s))
+        predicted = "TIMEOUT"
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -221,6 +231,7 @@ def run_eval(
     out_prefix: str = "logs/run",
     max_iterations: int = 25,
     max_depth: int = 5,
+    timeout_s: int = 180,
     verbose: bool = False,
 ) -> None:
     from datasets import load_dataset
@@ -231,12 +242,7 @@ def run_eval(
     print("Loading BrowseComp+ dataset…")
     dataset = load_dataset("Tevatron/browsecomp-plus", split="test")
 
-    index_dir = os.environ["FAISS_INDEX_DIR"]
-    embed_fn = make_embedding_fn(os.environ["EMBEDDING_SERVER_URL"])
-    retriever = FaissRetriever(
-        index_pattern=os.path.join(index_dir, "*.pkl"),
-        embedding_fn=embed_fn,
-    )
+    retriever = FaissRetriever(server_url=os.environ["EMBEDDING_SERVER_URL"])
 
     results: list[dict] = []
     rows = list(dataset)[start:end]
@@ -250,6 +256,7 @@ def run_eval(
             max_iterations=max_iterations,
             max_depth=max_depth,
             verbose=verbose,
+            timeout_s=timeout_s,
         )
         results.append(r)
 
@@ -332,8 +339,9 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--end", type=int, default=50)
     parser.add_argument("--out", default="logs/run", help="Output file prefix (no extension)")
-    parser.add_argument("--max-iters", type=int, default=25)
+    parser.add_argument("--max-iters", type=int, default=20)
     parser.add_argument("--max-depth", type=int, default=5)
+    parser.add_argument("--timeout", type=int, default=180, help="Per-question timeout in seconds")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -343,5 +351,6 @@ if __name__ == "__main__":
         out_prefix=args.out,
         max_iterations=args.max_iters,
         max_depth=args.max_depth,
+        timeout_s=args.timeout,
         verbose=args.verbose,
     )
