@@ -23,9 +23,10 @@ from dataclasses import dataclass, field
 
 import dspy
 from dotenv import load_dotenv
+from dspy.utils.usage_tracker import track_usage
 
 from .signatures import BrowseCompSignature
-from .tools import FaissRetriever
+from .tools import RemoteRetriever as FaissRetriever
 
 load_dotenv()
 
@@ -79,6 +80,7 @@ def build_lm() -> dspy.LM:
         api_version=api_version,
         temperature=1.0,
         max_tokens=16000,
+        cache=False,
     )
 
 
@@ -188,9 +190,6 @@ def run_question(
 
     Tracks latency and token usage from the DSPy LM history.
     """
-    lm = dspy.settings.lm
-    history_before = len(getattr(lm, "history", []) or [])
-
     rlm, metrics = build_rlm_agent(
         retriever=retriever,
         max_depth=max_depth,
@@ -198,14 +197,12 @@ def run_question(
         verbose=verbose,
     )
 
-    t0 = time.time()
-    result = rlm(question=question)
-    metrics.latency_s = time.time() - t0
+    with track_usage() as tracker:
+        t0 = time.time()
+        result = rlm(question=question)
+        metrics.latency_s = time.time() - t0
 
-    # Count tokens from new LM history entries
-    history = getattr(lm, "history", []) or []
-    for entry in history[history_before:]:
-        usage = entry.get("usage") or {}
+    for usage in tracker.get_total_tokens().values():
         metrics.input_tokens += usage.get("prompt_tokens", 0)
         metrics.output_tokens += usage.get("completion_tokens", 0)
 
