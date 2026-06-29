@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from rag import FaissRetriever, RunMetrics, build_lm, make_embedding_fn
+from rag import RemoteRetriever, RunMetrics, build_lm
 from rag.agent import run_question
 
 load_dotenv()
@@ -231,12 +231,7 @@ def run_eval(
     print("Loading BrowseComp+ dataset…")
     dataset = load_dataset("Tevatron/browsecomp-plus", split="test")
 
-    index_dir = os.environ["FAISS_INDEX_DIR"]
-    embed_fn = make_embedding_fn(os.environ["EMBEDDING_SERVER_URL"])
-    retriever = FaissRetriever(
-        index_pattern=os.path.join(index_dir, "*.pkl"),
-        embedding_fn=embed_fn,
-    )
+    retriever = RemoteRetriever(server_url=os.environ["EMBEDDING_SERVER_URL"])
 
     results: list[dict] = []
     rows = list(dataset)[start:end]

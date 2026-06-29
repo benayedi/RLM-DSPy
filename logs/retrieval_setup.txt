@@ -1,0 +1,82 @@
+RETRIEVAL SETUP — BrowseComp+ RAG RLM
+========================================================================
+
+All retrieval is handled by a GPU server (Qwen3-Embed-8B) running on
+raid03 via SSH tunnel → accessible at http://localhost:8001.
+
+------------------------------------------------------------------------
+SERVER STARTUP
+------------------------------------------------------------------------
+
+  python embed_server_new.py \
+      --faiss-index ~/faiss_cache/_cached.faiss \
+      --faiss-ids   ~/faiss_cache/_cached_ids.pkl \
+      --max-length  8192 \
+      --port        8001
+
+Resources loaded at startup:
+  - Embedding model : Qwen3-Embed-8B (float16, GPU)
+  - FAISS index     : ~/faiss_cache/_cached.faiss
+                      100,195 vectors, dim=4096, IndexFlatIP, on GPU
+  - ID lookup       : ~/faiss_cache/_cached_ids.pkl  (list[str])
+  - Corpus          : Tevatron/browsecomp-plus-corpus (HuggingFace)
+                      100,195 documents, held in memory as {docid: text}
+
+------------------------------------------------------------------------
+search_index(query, top_k=10)   →   POST /search
+------------------------------------------------------------------------
+
+Called by the RLM agent at each iteration to find relevant passages.
+
+Steps on the GPU server:
+
+  1. Prepend retrieval instruction to the query:
+       "Instruct: Given a web search query, retrieve relevant passages
+        that answer the query\nQuery: <query>"
+
+  2. Tokenize with Qwen3-Embed-8B tokenizer
+       (padding=True, truncation=True, max_length=8192)
+
+  3. Run model forward pass on GPU (float16)
+       Extract the last non-padding token's hidden state vector (dim=4096)
+       Apply L2 normalisation → unit vector
+
+  4. Inner-product search on the GPU FAISS index (IndexFlatIP)
+       Returns top-k (score, index) pairs
+       Score ≈ cosine similarity (vectors are unit-normalised)
+
+  5. Map index → doc_id using the ID lookup list
+
+  6. Fetch document text from the in-memory corpus dict
+       Truncate to 2000 characters
+
+  7. Return to laptop:
+       [{"score": float, "doc_id": str, "text": str}, ...]
+
+------------------------------------------------------------------------
+get_document(doc_id)   →   POST /document
+------------------------------------------------------------------------
+
+Called by the RLM agent when a search snippet is truncated at a
+relevant point and the full document text is needed.
+
+Steps on the GPU server:
+
+  1. Look up doc_id in the in-memory corpus dict
+       {docid → full text}, loaded from Tevatron/browsecomp-plus-corpus
+
+  2. Return to laptop:
+       {"doc_id": str, "text": str}   (full text, no truncation)
+       or {"error": str, "doc_id": str, "text": ""}  if not found
+
+------------------------------------------------------------------------
+NOTES
+------------------------------------------------------------------------
+
+- The laptop never loads the FAISS index or corpus — all retrieval
+  state lives on the GPU server.
+- Both search_index and get_document are single HTTP round-trips to the
+  GPU, so network latency is the only overhead on the laptop side.
+- The same FAISS index was previously built from pkl shards in
+  BrowseComp-Plus/indexes/qwen3-embedding-8b/ and cached as
+  _cached.faiss + _cached_ids.pkl.
