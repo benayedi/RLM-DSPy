@@ -1,0 +1,56 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q5  (5 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 15:59
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 3/5 (60.0%)
+Avg latency       : 36.7s
+Avg tokens in/out : 94959 / 2076
+Avg iterations    : 6.2
+Avg delegations   : 0.0
+Avg unique docs   : 40.0
+
+Retrieval Recall:
+  Gold recall     : 0.900
+  Evidence recall : 0.727
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=3  Deleg=0  Docs=16  Lat=16.1s  Tok=20609/1025
+       Gold recall=1.00  Evid recall=0.83
+
+[Q002] ✓  Could you provide the name of the individual who:   - As of December 2023, the i
+       Answer    : Laura Lojo-Rodríguez
+       Gold      : Laura Lojo-Rodriguez
+       Iters=5  Deleg=0  Docs=48  Lat=22.2s  Tok=39881/1644
+       Gold recall=1.00  Evid recall=0.67
+
+[Q003] ✓  In the 1910s, an individual was born to a couple who lived in a wooden house in 
+       Answer    : Vakkorama
+       Gold      : Vakkorama
+       Iters=4  Deleg=0  Docs=34  Lat=18.8s  Tok=34405/1263
+       Gold recall=1.00  Evid recall=0.67
+
+[Q004] ✗  A township was established in the 1960s to accommodate migrant workers. Initiall
+       Answer    : Unknown
+       Gold      : Secretary
+       Iters=13  Deleg=0  Docs=86  Lat=80.5s  Tok=312167/4729
+       Gold recall=1.00  Evid recall=0.80
+
+[Q005] ✗  A child was reported missing several times between January 1, 2014, and December
+       Answer    : white
+       Gold      : Red
+       Iters=6  Deleg=0  Docs=16  Lat=45.9s  Tok=67732/1717
+       Gold recall=0.50  Evid recall=0.67

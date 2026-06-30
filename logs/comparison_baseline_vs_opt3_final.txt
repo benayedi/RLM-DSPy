@@ -1,0 +1,93 @@
+====================================================================================
+BrowseComp+ Evaluation — Baseline vs. Opt3 + Delegation + Commit Fix
+Q1–Q35 (35 questions)
+====================================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Baseline date : 2026-06-25  Prompt v2 (no delegation)
+New run date  : 2026-06-30  Opt3: delegation + doc-passing + commit rule
+
+Config (new run):
+  Max parent iters : 25       Max depth        : 5
+  Child max iters  : 6        Search top_k     : 10
+  Delegation trigger: score ≥ 0.5 at iter 4+, commit rule: score ≥ 0.6 → immediate SUBMIT
+
+────────────────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────────────────
+
+                          Baseline        Opt3+Deleg+Commit
+Accuracy          :       18/35 (51.4%)    17/35 (48.6%)
+Avg latency       :       47.4s           54.1s
+Avg tokens in     :       242,449       241,950
+Avg iterations    :       10.1           9.9
+Total delegations :       0               15
+Avg gold recall   :       0.592           0.508
+
+  Q01–Q10  :       4/10 (40%)         4/10 (40%)
+  Q11–Q20  :       5/10 (50%)         4/10 (40%)
+  Q21–Q35  :       9/15 (60%)         9/15 (60%)
+
+────────────────────────────────────────────────────────────────────────────────────
+CHANGES vs BASELINE
+────────────────────────────────────────────────────────────────────────────────────
+
+Gains  (+4): Q010, Q030, Q031, Q032
+Losses (-5): Q009, Q019, Q024, Q025, Q027
+
+  GAIN  Q010: 'Raheem Sterling'  (gold='Raheem Sterling')
+  GAIN  Q030: 'Mack and Sheffield'  (gold='Mack, Sheffield')
+  GAIN  Q031: 'Sadiq'  (gold='Sadiq')
+  GAIN  Q032: 'Irving'  (gold='Irving')
+  LOSS  Q009: now='Unknown'  was='21'
+  LOSS  Q019: now='Unknown'  was='Oral creatine supplementation...'
+  LOSS  Q024: now='National Institute of Technology Karnata'  was='Lady Shri Ram College'
+  LOSS  Q025: now='Stop-Time'  was='Heaven'
+  LOSS  Q027: now='Elke Schletz'  was='Monique Marguerite Alberte Vanwelsenaere'
+
+────────────────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────────────────
+
+Q      Gold                                               Baseline            Opt3+Deleg+Commit    
+─────  ──────────────────────────────────────────  ──────────────────────  ────────────────────────
+Q001   Queen Arwa University                       ✓ Queen Arwa Univers  ✓ Queen Arwa Universit    deleg=0 gr=1.00
+Q002   Laura Lojo-Rodriguez                        ✓ Laura Lojo-Rodrígu  ✓ Laura Lojo-Rodríguez    deleg=2 gr=1.00
+Q003   Vakkorama                                   ✓ Vakkorama           ✓ Vakkorama               deleg=0 gr=0.33
+Q004   Secretary                                   ✗ Unknown             ✗ Unknown                 deleg=0 gr=0.00
+Q005   Red                                         ✗ white               ✗ white                   deleg=0 gr=0.50
+Q006   Georgia Hirst                               ✗ Unknown             ✗ Unknown                 deleg=0 gr=0.17
+Q007   Boston                                      ✗ Osaka               ✗ Unknown                 deleg=0 gr=0.00
+Q008   The Dorset Culture of the Eastern Arctic    ✗ Unknown             ✗ Unknown                 deleg=0 gr=0.00
+Q009   21                                          ✓ 21                  ✗ Unknown               ↓ deleg=0 gr=0.67
+Q010   Raheem Sterling                             ✗ Unknown             ✓ Raheem Sterling       ↑ deleg=0 gr=0.00
+Q011   Electra                                     ✓ Electra             ✓ Electra                 deleg=0 gr=0.67
+Q012   Jacqueline Georgette Cantrelle              ✓ Jacqueline Georget  ✓ Jacqueline Georgette    deleg=3 gr=0.50
+Q013   Rona Weerasuriya                            ✗ Unknown             ✗ Unknown                 deleg=0 gr=0.50
+Q014   Kiran Shah                                  ✗ Naseeruddin Shah    ✗ Naseeruddin Shah        deleg=0 gr=0.00
+Q015   Emmanuel Kwesi Danso Arthur Junior          ✗ Tiwatope Savage     ✗ Tiwatope Savage         deleg=3 gr=0.00
+Q016   Taj-ul-Masajid                              ✓ Taj-ul-Masajid      ✓ Taj-ul-Masajid          deleg=2 gr=1.00
+Q017   "Manos"                                     ✓ "Manos"             ✓ "Manos"                 deleg=0 gr=1.00
+Q018   Jadal                                       ✗ Unknown             ✗ Unknown                 deleg=0 gr=0.29
+Q019   Oral creatine supplementation: A potenti    ✓ Oral creatine supp  ✗ Unknown               ↓ deleg=0 gr=0.00
+Q020   29/02                                       ✗ Unknown             ✗ Unknown                 deleg=0 gr=1.00
+Q021   1419                                        ✗ Unknown             ✗ Unknown                 deleg=3 gr=1.00
+Q022   Odeal                                       ✗ Capo Plaza          ✗ Capo Plaza              deleg=0 gr=0.00
+Q023   Breadfast                                   ✓ Breadfast           ✓ Breadfast               deleg=0 gr=0.50
+Q024   Lady Shri Ram College for Women             ✓ Lady Shri Ram Coll  ✗ National Institute o  ↓ deleg=0 gr=0.00
+Q025   Heaven                                      ✓ Heaven              ✗ Stop-Time             ↓ deleg=0 gr=0.33
+Q026   Lebo                                        ✓ Lebo                ✓ Lebo                    deleg=0 gr=1.00
+Q027   Monique Marguerite Alberte Vanwelsenaere    ✓ Monique Marguerite  ✗ Elke Schletz          ↓ deleg=0 gr=0.00
+Q028   Jaja of Opobo: The slave who became a ki    ✓ Jaja of Opobo: The  ✓ Jaja of Opobo: The S    deleg=0 gr=1.00
+Q029   Ana Djaimilia dos Santos Pereira de Alme    ✗ Djaimilia Pereira   ✗ Djaimilia Pereira de    deleg=2 gr=1.00
+Q030   Mack, Sheffield                             ✗ Mack, Sheffield, M  ✓ Mack and Sheffield    ↑ deleg=0 gr=1.00
+Q031   Sadiq                                       ✗ Paul                ✓ Sadiq                 ↑ deleg=0 gr=0.50
+Q032   Irving                                      ✗ Unknown             ✓ Irving                ↑ deleg=0 gr=1.00
+Q033   Tweentrepreneurs                            ✓ Tweentrepreneurs    ✓ Tweentrepreneurs        deleg=0 gr=0.50
+Q034   Holly Gauthier-Frankel                      ✓ Holly Gauthier-Fra  ✓ Holly Gauthier-Frank    deleg=0 gr=0.83
+Q035   One Red Rose                                ✓ One Red Rose        ✓ One Red Rose            deleg=0 gr=0.50
+
+────────────────────────────────────────────────────────────────────────────────────
+NOTE: Q021 not actively fixed (requires arithmetic over multi-match snooker document).
+      Temperature=1.0 causes run-to-run variance; losses vs baseline likely stochastic.
+────────────────────────────────────────────────────────────────────────────────────

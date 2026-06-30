@@ -1,0 +1,116 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q15  (15 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 18:08
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 2/15 (13.3%)
+Avg latency       : 59.7s
+Avg tokens in/out : 142926 / 4074
+Avg iterations    : 11.5
+Avg delegations   : 0.9
+Avg unique docs   : 31.6
+
+Retrieval Recall:
+  Gold recall     : 0.211
+  Evidence recall : 0.231
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=3  Deleg=0  Docs=26  Lat=14.6s  Tok=28686/820
+       Gold recall=1.00  Evid recall=0.83
+
+[Q002] ✓  Could you provide the name of the individual who:   - As of December 2023, the i
+       Answer    : Laura Lojo-Rodríguez
+       Gold      : Laura Lojo-Rodriguez
+       Iters=7  Deleg=3  Docs=109  Lat=66.1s  Tok=130661/3434
+       Gold recall=1.00  Evid recall=0.89
+
+[Q003] ✗  In the 1910s, an individual was born to a couple who lived in a wooden house in 
+       Answer    : Sasha
+       Gold      : Vakkorama
+       Iters=13  Deleg=2  Docs=87  Lat=75.2s  Tok=230073/3497
+       Gold recall=0.00  Evid recall=0.00
+
+[Q004] ✗  A township was established in the 1960s to accommodate migrant workers. Initiall
+       Answer    : Unknown
+       Gold      : Secretary
+       Iters=15  Deleg=0  Docs=42  Lat=72.2s  Tok=387431/5826
+       Gold recall=0.00  Evid recall=0.60
+
+[Q005] ✗  A child was reported missing several times between January 1, 2014, and December
+       Answer    : white
+       Gold      : Red
+       Iters=6  Deleg=2  Docs=21  Lat=40.3s  Tok=62612/1600
+       Gold recall=1.00  Evid recall=1.00
+
+[Q006] ✗  What is the real-life first and last name of the entertainer who;   First appear
+       Answer    : Eugene Maurice Orowitz
+       Gold      : Georgia Hirst
+       Iters=11  Deleg=2  Docs=79  Lat=71.5s  Tok=199346/4208
+       Gold recall=0.17  Evid recall=0.14
+
+[Q007] ✗  A book that was once a contender for an award, originally created in the 2000s (
+       Answer    : New York City
+       Gold      : Boston
+       Iters=6  Deleg=2  Docs=25  Lat=47.8s  Tok=74731/2771
+       Gold recall=0.00  Evid recall=0.00
+
+[Q008] ✗  Someone born in 1886 was mistaken for a shaman during a trip taken between April
+       Answer    : Unknown
+       Gold      : The Dorset Culture of the Eastern Arctic
+       Iters=15  Deleg=2  Docs=85  Lat=87.9s  Tok=259870/5160
+       Gold recall=0.00  Evid recall=0.00
+
+[Q009] ✗  A CEO who founded a company in the mid-1990s was raised in Southern Africa. His 
+       Answer    : Unknown
+       Gold      : 21
+       Iters=15  Deleg=0  Docs=0  Lat=65.2s  Tok=135195/5258
+       Gold recall=0.00  Evid recall=0.00
+
+[Q010] ✗  The league football match occurred between 1992 and 2023 (inclusive).  The match
+       Answer    : Dries Mertens
+       Gold      : Raheem Sterling
+       Iters=10  Deleg=0  Docs=0  Lat=48.9s  Tok=89226/4318
+       Gold recall=0.00  Evid recall=0.00
+
+[Q011] ✗  Sometime before 2020, an American director announced they would start a school i
+       Answer    : Mary
+       Gold      : Electra
+       Iters=11  Deleg=0  Docs=0  Lat=41.0s  Tok=71266/3058
+       Gold recall=0.00  Evid recall=0.00
+
+[Q012] ✗  Give me this person's full birth name. - This person was born in the 1920s in Pa
+       Answer    : Unknown
+       Gold      : Jacqueline Georgette Cantrelle
+       Iters=15  Deleg=0  Docs=0  Lat=89.6s  Tok=142362/7352
+       Gold recall=0.00  Evid recall=0.00
+
+[Q013] ✗  There was a paper that included a quote from John Muir, dated 1901, and it was p
+       Answer    : Unknown
+       Gold      : Rona Weerasuriya
+       Iters=15  Deleg=0  Docs=0  Lat=56.4s  Tok=111963/4353
+       Gold recall=0.00  Evid recall=0.00
+
+[Q014] ✗  Provide the first name and last name of the person based on the following detail
+       Answer    : Unknown
+       Gold      : Kiran Shah
+       Iters=15  Deleg=0  Docs=0  Lat=68.5s  Tok=119712/5288
+       Gold recall=0.00  Evid recall=0.00
+
+[Q015] ✗  Give me the full birth name of the artiste based on the following hints :   1. T
+       Answer    : Unknown
+       Gold      : Emmanuel Kwesi Danso Arthur Junior 
+       Iters=15  Deleg=0  Docs=0  Lat=50.0s  Tok=100757/4174
+       Gold recall=0.00  Evid recall=0.00

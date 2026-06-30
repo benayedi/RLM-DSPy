@@ -1,0 +1,86 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q16–Q25  (10 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 21:40
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 1/10 (10.0%)
+Avg latency       : 166.8s
+Avg tokens in/out : 325530 / 5006
+Avg iterations    : 12.5
+Avg delegations   : 0.4
+Avg unique docs   : 71.0
+
+Retrieval Recall:
+  Gold recall     : 0.500
+  Evidence recall : 0.438
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q016] ✗  I am looking for a mosque that meets the following criteria:  - It was completed
+       Answer    : Masjid al-Haram
+       Gold      : Taj-ul-Masajid
+       Iters=15  Deleg=0  Docs=32  Lat=83.0s  Tok=373926/6306
+       Gold recall=1.00  Evid recall=0.86
+
+[Q017] ✗  An article about a writer born in July was posted on April 26, 2023. The article
+       Answer    : Unknown
+       Gold      : "Manos"
+       Iters=15  Deleg=0  Docs=83  Lat=73.0s  Tok=404271/5023
+       Gold recall=1.00  Evid recall=0.50
+
+[Q018] ✗  The band was formed between 2001 and 2004 by a composer, music producer, guitari
+       Answer    : Rivermaya
+       Gold      : Jadal
+       Iters=12  Deleg=0  Docs=95  Lat=65.6s  Tok=259506/5621
+       Gold recall=0.00  Evid recall=0.00
+
+[Q019] ✗  A journal article was published between 2010 and 2016 (exclusive) that revolved 
+       Answer    : Unknown
+       Gold      : Oral creatine supplementation: A potential adjunct therapy for rheumatoid arthritis patients
+       Iters=14  Deleg=2  Docs=121  Lat=127.8s  Tok=396677/9314
+       Gold recall=0.00  Evid recall=0.60
+
+[Q020] ✗  By 2021, a couple welcomed their second child on the same day as their first. Th
+       Answer    : 23/09
+       Gold      : 29/02
+       Iters=12  Deleg=0  Docs=76  Lat=56.6s  Tok=227252/3691
+       Gold recall=1.00  Evid recall=0.67
+
+[Q021] ✗  In a particular match of a snooker championship played before 2022, the followin
+       Answer    : Unknown
+       Gold      : 1419
+       Iters=15  Deleg=0  Docs=32  Lat=91.1s  Tok=657775/6962
+       Gold recall=1.00  Evid recall=1.00
+
+[Q022] ✗  There is a music artist from the same country as a footballer, who was a runner-
+       Answer    : Capo Plaza
+       Gold      : Odeal
+       Iters=13  Deleg=0  Docs=95  Lat=50.2s  Tok=299413/2969
+       Gold recall=0.00  Evid recall=0.00
+
+[Q023] ✓  The company was founded in April between 2015 and 2018. Prior to December 2023, 
+       Answer    : Breadfast
+       Gold      : Breadfast
+       Iters=2  Deleg=0  Docs=10  Lat=6.8s  Tok=10091/332
+       Gold recall=0.33  Evid recall=0.33
+
+[Q024] ✗  Which institute is currently located within 2 to 7 miles arial distance from the
+       Answer    : Unknown
+       Gold      : Lady Shri Ram College for Women
+       Iters=15  Deleg=2  Docs=67  Lat=99.2s  Tok=394654/6174
+       Gold recall=0.33  Evid recall=0.22
+
+[Q025] ✗  A writer: - was born before 1980 - grew up in poverty - had an absent father in 
+       Answer    : All Over but the Shoutin'
+       Gold      : Heaven
+       Iters=12  Deleg=0  Docs=99  Lat=1014.5s  Tok=231730/3670
+       Gold recall=0.33  Evid recall=0.20

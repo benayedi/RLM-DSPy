@@ -1,0 +1,56 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q5  (5 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 12:09
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 3/5 (60.0%)
+Avg latency       : 8.5s
+Avg tokens in/out : 0 / 0
+Avg iterations    : 6.8
+Avg delegations   : 0.0
+Avg unique docs   : 29.8
+
+Retrieval Recall:
+  Gold recall     : 0.617
+  Evidence recall : 0.653
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=3  Deleg=0  Docs=18  Lat=18.3s  Tok=0/0
+       Gold recall=1.00  Evid recall=0.83
+
+[Q002] ✓  Could you provide the name of the individual who:   - As of December 2023, the i
+       Answer    : Laura Lojo-Rodríguez
+       Gold      : Laura Lojo-Rodriguez
+       Iters=6  Deleg=0  Docs=29  Lat=5.0s  Tok=0/0
+       Gold recall=0.75  Evid recall=0.67
+
+[Q003] ✓  In the 1910s, an individual was born to a couple who lived in a wooden house in 
+       Answer    : Vakkorama
+       Gold      : Vakkorama
+       Iters=5  Deleg=0  Docs=36  Lat=3.6s  Tok=0/0
+       Gold recall=0.33  Evid recall=0.17
+
+[Q004] ✗  A township was established in the 1960s to accommodate migrant workers. Initiall
+       Answer    : Unknown
+       Gold      : Secretary
+       Iters=15  Deleg=0  Docs=49  Lat=12.9s  Tok=0/0
+       Gold recall=0.00  Evid recall=0.60
+
+[Q005] ✗  A child was reported missing several times between January 1, 2014, and December
+       Answer    : white
+       Gold      : Red
+       Iters=5  Deleg=0  Docs=17  Lat=2.6s  Tok=0/0
+       Gold recall=1.00  Evid recall=1.00

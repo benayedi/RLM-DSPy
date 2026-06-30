@@ -1,0 +1,32 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q43–Q43  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 16:23
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 0/1 (0.0%)
+Avg latency       : 96.5s
+Avg tokens in/out : 490200 / 6420
+Avg iterations    : 15.0
+Avg delegations   : 0.0
+Avg unique docs   : 181.0
+
+Retrieval Recall:
+  Gold recall     : 0.000
+  Evidence recall : 0.000
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q043] ✗  An individual was born between 1830 and 1840 (exclusive), had a farmer parent, c
+       Answer    : Unknown
+       Gold      : Edwin Hughes Kendrick
+       Iters=15  Deleg=0  Docs=181  Lat=96.5s  Tok=490200/6420
+       Gold recall=0.00  Evid recall=0.00

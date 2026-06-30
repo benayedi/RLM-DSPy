@@ -236,17 +236,43 @@ def run_eval(
     results: list[dict] = []
     rows = list(dataset)[start:end]
 
+    per_q_timeout = args.timeout if args.timeout > 0 else None
+
     for i, row in enumerate(rows):
         q_idx = start + i
-        r = run_one(
-            retriever=retriever,
-            row=row,
-            q_idx=q_idx,
-            max_iterations=max_iterations,
-            max_depth=max_depth,
-            verbose=verbose,
-        )
+        if per_q_timeout:
+            import signal
+            def _timeout_handler(signum, frame):
+                raise TimeoutError(f"Question timed out after {per_q_timeout}s")
+            signal.signal(signal.SIGALRM, _timeout_handler)
+            signal.alarm(per_q_timeout)
+        try:
+            r = run_one(
+                retriever=retriever,
+                row=row,
+                q_idx=q_idx,
+                max_iterations=max_iterations,
+                max_depth=max_depth,
+                verbose=verbose,
+            )
+        except TimeoutError as e:
+            print(f"  TIMEOUT: {e}")
+            r = {
+                "q_idx": q_idx, "question": get_question(row), "gold": get_gold_answer(row),
+                "predicted": "TIMEOUT", "correct": False, "latency_s": per_q_timeout,
+                "input_tokens": 0, "output_tokens": 0, "iterations": 0,
+                "delegation_calls": 0, "gold_recall": 0.0, "evid_recall": 0.0,
+            }
+        finally:
+            if per_q_timeout:
+                signal.alarm(0)
         results.append(r)
+
+        # Save after every question so a crash doesn't lose progress
+        json_path = f"{out_prefix}.json"
+        Path(json_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(json_path, "w") as f:
+            json.dump(results, f, indent=2)
 
         if (i + 1) % 5 == 0:
             n_correct = sum(x["correct"] for x in results)
@@ -330,6 +356,8 @@ if __name__ == "__main__":
     parser.add_argument("--max-iters", type=int, default=25)
     parser.add_argument("--max-depth", type=int, default=5)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--timeout", type=int, default=0,
+                        help="Per-question timeout in seconds (0 = no limit)")
     args = parser.parse_args()
 
     run_eval(

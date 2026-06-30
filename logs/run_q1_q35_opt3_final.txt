@@ -1,0 +1,236 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q35  (35 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 23:12
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 16/35 (45.7%)
+Avg latency       : 86.6s
+Avg tokens in/out : 248855 / 3813
+Avg iterations    : 10.1
+Avg delegations   : 0.4
+Avg unique docs   : 63.0
+
+Retrieval Recall:
+  Gold recall     : 0.508
+  Evidence recall : 0.467
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=4  Deleg=0  Docs=23  Lat=22.2s  Tok=43213/1377
+       Gold recall=1.00  Evid recall=1.00
+
+[Q002] ✓  Could you provide the name of the individual who:   - As of December 2023, the i
+       Answer    : Laura Lojo-Rodríguez
+       Gold      : Laura Lojo-Rodriguez
+       Iters=5  Deleg=2  Docs=19  Lat=33.3s  Tok=59582/2185
+       Gold recall=1.00  Evid recall=0.67
+
+[Q003] ✓  In the 1910s, an individual was born to a couple who lived in a wooden house in 
+       Answer    : Vakkorama
+       Gold      : Vakkorama
+       Iters=6  Deleg=0  Docs=30  Lat=35.5s  Tok=65157/2895
+       Gold recall=0.33  Evid recall=0.17
+
+[Q004] ✗  A township was established in the 1960s to accommodate migrant workers. Initiall
+       Answer    : Unknown
+       Gold      : Secretary
+       Iters=15  Deleg=0  Docs=43  Lat=90.8s  Tok=486610/6713
+       Gold recall=0.00  Evid recall=0.60
+
+[Q005] ✗  A child was reported missing several times between January 1, 2014, and December
+       Answer    : white
+       Gold      : Red
+       Iters=2  Deleg=0  Docs=10  Lat=15.0s  Tok=16410/1098
+       Gold recall=0.50  Evid recall=0.67
+
+[Q006] ✗  What is the real-life first and last name of the entertainer who;   First appear
+       Answer    : Unknown
+       Gold      : Georgia Hirst
+       Iters=15  Deleg=0  Docs=116  Lat=96.4s  Tok=396890/6543
+       Gold recall=0.17  Evid recall=0.14
+
+[Q007] ✗  A book that was once a contender for an award, originally created in the 2000s (
+       Answer    : Unknown
+       Gold      : Boston
+       Iters=16  Deleg=0  Docs=69  Lat=95.8s  Tok=648740/6845
+       Gold recall=0.00  Evid recall=0.00
+
+[Q008] ✗  Someone born in 1886 was mistaken for a shaman during a trip taken between April
+       Answer    : Unknown
+       Gold      : The Dorset Culture of the Eastern Arctic
+       Iters=18  Deleg=0  Docs=218  Lat=111.3s  Tok=626446/7100
+       Gold recall=0.00  Evid recall=0.17
+
+[Q009] ✗  A CEO who founded a company in the mid-1990s was raised in Southern Africa. His 
+       Answer    : Unknown
+       Gold      : 21
+       Iters=15  Deleg=0  Docs=52  Lat=86.3s  Tok=438843/5949
+       Gold recall=0.67  Evid recall=0.50
+
+[Q010] ✗  The league football match occurred between 1992 and 2023 (inclusive).  The match
+       Answer    : Unknown
+       Gold      : Raheem Sterling
+       Iters=15  Deleg=0  Docs=97  Lat=1182.8s  Tok=499507/6907
+       Gold recall=0.00  Evid recall=0.00
+
+[Q011] ✓  Sometime before 2020, an American director announced they would start a school i
+       Answer    : Electra
+       Gold      : Electra
+       Iters=6  Deleg=0  Docs=46  Lat=20.2s  Tok=61349/1248
+       Gold recall=0.67  Evid recall=0.67
+
+[Q012] ✓  Give me this person's full birth name. - This person was born in the 1920s in Pa
+       Answer    : Jacqueline Georgette Cantrelle
+       Gold      : Jacqueline Georgette Cantrelle
+       Iters=14  Deleg=3  Docs=24  Lat=84.2s  Tok=289390/4733
+       Gold recall=0.50  Evid recall=0.20
+
+[Q013] ✗  There was a paper that included a quote from John Muir, dated 1901, and it was p
+       Answer    : Unknown
+       Gold      : Rona Weerasuriya
+       Iters=15  Deleg=0  Docs=139  Lat=83.1s  Tok=482455/6639
+       Gold recall=0.50  Evid recall=0.50
+
+[Q014] ✗  Provide the first name and last name of the person based on the following detail
+       Answer    : Naseeruddin Shah
+       Gold      : Kiran Shah
+       Iters=13  Deleg=0  Docs=76  Lat=52.5s  Tok=257849/3360
+       Gold recall=0.00  Evid recall=0.00
+
+[Q015] ✗  Give me the full birth name of the artiste based on the following hints :   1. T
+       Answer    : Tiwatope Savage
+       Gold      : Emmanuel Kwesi Danso Arthur Junior 
+       Iters=15  Deleg=3  Docs=184  Lat=105.3s  Tok=409139/5024
+       Gold recall=0.00  Evid recall=0.00
+
+[Q016] ✓  I am looking for a mosque that meets the following criteria:  - It was completed
+       Answer    : Taj-ul-Masajid
+       Gold      : Taj-ul-Masajid
+       Iters=11  Deleg=2  Docs=25  Lat=56.5s  Tok=177809/4350
+       Gold recall=1.00  Evid recall=1.00
+
+[Q017] ✓  An article about a writer born in July was posted on April 26, 2023. The article
+       Answer    : "Manos"
+       Gold      : "Manos"
+       Iters=9  Deleg=0  Docs=36  Lat=41.8s  Tok=137227/3161
+       Gold recall=1.00  Evid recall=0.50
+
+[Q018] ✗  The band was formed between 2001 and 2004 by a composer, music producer, guitari
+       Answer    : Unknown
+       Gold      : Jadal
+       Iters=14  Deleg=0  Docs=174  Lat=75.1s  Tok=388284/5732
+       Gold recall=0.29  Evid recall=0.25
+
+[Q019] ✗  A journal article was published between 2010 and 2016 (exclusive) that revolved 
+       Answer    : Unknown
+       Gold      : Oral creatine supplementation: A potential adjunct therapy for rheumatoid arthritis patients
+       Iters=15  Deleg=0  Docs=143  Lat=98.9s  Tok=484585/8403
+       Gold recall=0.00  Evid recall=0.80
+
+[Q020] ✗  By 2021, a couple welcomed their second child on the same day as their first. Th
+       Answer    : Unknown
+       Gold      : 29/02
+       Iters=15  Deleg=0  Docs=62  Lat=80.2s  Tok=420341/5353
+       Gold recall=1.00  Evid recall=0.67
+
+[Q021] ✗  In a particular match of a snooker championship played before 2022, the followin
+       Answer    : Unknown
+       Gold      : 1419
+       Iters=15  Deleg=3  Docs=31  Lat=96.9s  Tok=419099/5716
+       Gold recall=1.00  Evid recall=1.00
+
+[Q022] ✗  There is a music artist from the same country as a footballer, who was a runner-
+       Answer    : Capo Plaza
+       Gold      : Odeal
+       Iters=15  Deleg=0  Docs=71  Lat=57.7s  Tok=413569/3155
+       Gold recall=0.00  Evid recall=0.00
+
+[Q023] ✓  The company was founded in April between 2015 and 2018. Prior to December 2023, 
+       Answer    : Breadfast
+       Gold      : Breadfast
+       Iters=2  Deleg=0  Docs=10  Lat=7.8s  Tok=14244/537
+       Gold recall=0.50  Evid recall=0.50
+
+[Q024] ✗  Which institute is currently located within 2 to 7 miles arial distance from the
+       Answer    : National Institute of Technology Karnataka, Surathkal
+       Gold      : Lady Shri Ram College for Women
+       Iters=8  Deleg=0  Docs=49  Lat=43.5s  Tok=150198/3660
+       Gold recall=0.00  Evid recall=0.00
+
+[Q025] ✗  A writer: - was born before 1980 - grew up in poverty - had an absent father in 
+       Answer    : Stop-Time
+       Gold      : Heaven
+       Iters=15  Deleg=0  Docs=79  Lat=60.1s  Tok=307916/3675
+       Gold recall=0.33  Evid recall=0.20
+
+[Q026] ✓  An actress who studied musical theatre and graduated in 2002 was cast in a soap 
+       Answer    : Lebo
+       Gold      : Lebo
+       Iters=4  Deleg=0  Docs=28  Lat=14.4s  Tok=38106/860
+       Gold recall=1.00  Evid recall=1.00
+
+[Q027] ✗  I'm looking for the full birth name of a person who fits all of these details. T
+       Answer    : Elke Schletz
+       Gold      : Monique Marguerite Alberte Vanwelsenaere
+       Iters=2  Deleg=0  Docs=20  Lat=12.1s  Tok=14689/1076
+       Gold recall=0.00  Evid recall=0.00
+
+[Q028] ✓  A slave in Africa and, later, a merchant who died en route to their destination,
+       Answer    : Jaja of Opobo: The Slave Who Became a King
+       Gold      : Jaja of Opobo: The slave who became a king
+       Iters=5  Deleg=0  Docs=18  Lat=23.8s  Tok=66525/1872
+       Gold recall=1.00  Evid recall=0.50
+
+[Q029] ✗  There’s a semi-autobiography whose plot centers around the protagonist’s body pa
+       Answer    : Djaimilia Pereira de Almeida
+       Gold      : Ana Djaimilia dos Santos Pereira de Almeida Brito
+       Iters=6  Deleg=2  Docs=25  Lat=34.5s  Tok=72728/1834
+       Gold recall=1.00  Evid recall=0.56
+
+[Q030] ✓  A video game expansion was released in the 2000s that credited over 200 people f
+       Answer    : Mack and Sheffield
+       Gold      : Mack, Sheffield
+       Iters=3  Deleg=0  Docs=19  Lat=11.5s  Tok=28450/788
+       Gold recall=1.00  Evid recall=0.75
+
+[Q031] ✓  Identify the first name of the person who explored the site where footprints of 
+       Answer    : Sadiq
+       Gold      : Sadiq
+       Iters=4  Deleg=0  Docs=25  Lat=12.8s  Tok=31878/719
+       Gold recall=0.50  Evid recall=0.50
+
+[Q032] ✓  A student of architecture who was born in the 19th Century but died in the 20th 
+       Answer    : Irving
+       Gold      : Irving
+       Iters=13  Deleg=0  Docs=85  Lat=72.8s  Tok=309498/4741
+       Gold recall=1.00  Evid recall=1.00
+
+[Q033] ✓  A co-authored article was published in 2021 discussing an animated TV series tha
+       Answer    : Tweentrepreneurs
+       Gold      : Tweentrepreneurs
+       Iters=10  Deleg=0  Docs=98  Lat=53.4s  Tok=249524/4602
+       Gold recall=0.50  Evid recall=0.40
+
+[Q034] ✓  Find the full name and surname of a North American individual who fulfills a set
+       Answer    : Holly Gauthier-Frankel
+       Gold      : Holly Gauthier-Frankel
+       Iters=7  Deleg=0  Docs=38  Lat=33.0s  Tok=125065/2353
+       Gold recall=0.83  Evid recall=0.78
+
+[Q035] ✓  I am looking for the title of a book first published in 1898 by an author born i
+       Answer    : One Red Rose
+       Gold      : One Red Rose
+       Iters=5  Deleg=0  Docs=22  Lat=28.8s  Tok=78609/2268
+       Gold recall=0.50  Evid recall=0.67

@@ -1,0 +1,53 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q1  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 15:39
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+RETRIEVAL SETUP
+────────────────────────────────────────────────────────────────────────
+Server        : http://localhost:8001 (GPU)
+Embedding model: Qwen3-Embed-8B (float16, max_length=8192)
+FAISS index   : ~/faiss_cache/_cached.faiss  (100,195 vectors, dim=4096, IndexFlatIP)
+Corpus        : Tevatron/browsecomp-plus-corpus  (100,195 docs)
+
+search_index(query, top_k)
+  1. Prepend query instruction: 'Instruct: Given a web search query, retrieve
+     relevant passages that answer the query\nQuery: <query>'
+  2. Tokenize + embed on GPU via Qwen3-Embed-8B (last non-padding token vector,
+     L2-normalised) → float32 vector of dim 4096
+  3. Inner-product search on GPU FAISS index → top-k (doc_id, score) pairs
+  4. Fetch doc text from in-memory corpus dict, truncate to 2000 chars
+  5. Return: [{score, doc_id, text}, ...]
+
+get_document(doc_id)
+  1. Look up doc_id in in-memory corpus dict (loaded from HuggingFace at startup)
+  2. Return full document text (no truncation)
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 1/1 (100.0%)
+Avg latency       : 19.4s
+Avg tokens in/out : 39430 / 1274
+Avg iterations    : 4.0
+Avg delegations   : 0.0
+Avg unique docs   : 31.0
+
+Retrieval Recall:
+  Gold recall     : 1.000
+  Evidence recall : 1.000
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=4  Deleg=0  Docs=31  Lat=19.4s  Tok=39430/1274
+       Gold recall=1.00  Evid recall=1.00

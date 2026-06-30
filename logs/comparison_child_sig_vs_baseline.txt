@@ -1,0 +1,109 @@
+========================================================================
+COMPARISON: Baseline vs Child Signature  (Q1–Q25)
+========================================================================
+
+Baseline  : browsecomp_rag_q1_q35_new_prompt.txt  (2026-06-25, no child sig)
+New       : run_q0_q5 + run_q5_q15 + run_q16_q25  (2026-06-29, with child sig)
+Model     : gpt-5.4-mini (Azure)
+Questions : Q01–Q25  (25 questions)
+
+NOTE: No delegation was triggered in any of the 25 questions (deleg=0 throughout).
+The child signature infrastructure is in place but none of these questions
+caused the parent to call delegate(). Differences below are due to LLM
+non-determinism (temperature=1.0), not the child signature itself.
+
+The root cause: children have no search tools — they can only analyze context
+passed by the parent. The parent has no incentive to delegate when it is still
+searching for documents itself. Next step: give children search_index + get_document.
+
+────────────────────────────────────────────────────────────────────────
+OVERALL SUMMARY  (Q01–Q25)
+────────────────────────────────────────────────────────────────────────
+
+                        Baseline        Child Sig       Delta
+                        ────────        ─────────       ─────
+Accuracy                12/25 (48%)     10/25 (40%)     -2    ↓
+Avg latency             50.1s           60.2s           +19.0% ↑
+Avg tokens in           267,534         240,668         -10.0% ↓ better
+Avg tokens out          3,893           3,662           -5.9%  ↓ better
+Avg iterations          10.4            10.2            -0.2   ~
+Delegations triggered   0               0               —
+
+────────────────────────────────────────────────────────────────────────
+BY BATCH
+────────────────────────────────────────────────────────────────────────
+
+                Baseline                    Child Sig               Tok delta
+                ────────────────────────    ────────────────────    ─────────
+Q01–Q05         3/5   28s   107,082 tok     3/5   37s    94,959     -11.3%
+Q06–Q15         3/10  66s   350,656 tok     3/10  80s   319,150      -9.0%
+Q16–Q25         6/10  46s   264,638 tok     4/10  51s   235,040     -11.2%
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION BREAKDOWN
+────────────────────────────────────────────────────────────────────────
+
+       ┌──────── Baseline ────────┐  ┌──────── Child Sig ───────┐
+Q      Res   Lat     Tok_in  Iters  │  Res   Lat     Tok_in  Iters  Gold_rec(new)
+────── ───   ──────  ──────  ─────  │  ───   ──────  ──────  ─────  ────────────
+Q001   ✓     25.6s    22,582    3   │  ✓     16.1s    20,609    3    1.00
+Q002   ✓     25.5s    78,625    6   │  ✓     22.2s    39,881    5    1.00
+Q003   ✓     14.1s    40,839    5   │  ✓     18.8s    34,405    4    1.00
+Q004   ✗     60.8s   345,561   15   │  ✗     80.5s   312,167   13    1.00 ↑
+Q005   ✗     15.4s    47,803    5   │  ✗     45.9s    67,732    6    0.50
+Q006   ✗    106.6s   843,472   19   │  ✗     88.7s   367,848   15    0.00
+Q007   ✗     63.2s   388,330   15   │  ✗    115.9s   468,646   16    0.00
+Q008   ✗     82.3s   540,984   17   │  ✗    102.0s   503,778   15    1.00 ↑
+Q009   ✓      8.6s    25,508    4   │  ✓     16.9s    34,071    4    0.67
+Q010   ✗     73.1s   427,769   15   │  ✗    117.1s   575,890   18    0.00
+Q011   ✓     20.8s    51,682    5   │  ✓     41.0s   112,949    8    0.67
+Q012   ✓     62.2s   339,067   14   │  ✓     58.1s   171,299    9    0.50
+Q013   ✗     93.6s   396,228   16   │  ✗    127.1s   535,264   18    0.00
+Q014   ✗     85.4s   234,866   10   │  ✗     59.4s   201,270   11    0.00
+Q015   ✗     60.1s   258,652   12   │  ✗     77.7s   220,488   12    0.00
+Q016   ✓     24.9s    88,820    6   │  ✗     68.3s   250,179   12    1.00 ↑ (regressed)
+Q017   ✓      8.3s    13,117    3   │  ✓     13.8s    17,449    3    1.00
+Q018   ✗     65.4s   388,906   15   │  ✗     26.6s    80,829    7    0.14
+Q019   ✓     32.7s    93,405    6   │  ✓     30.2s    63,230    6    1.00
+Q020   ✗     69.2s   382,970   15   │  ✓     34.3s   149,707    9    1.00 ✓ (fixed)
+Q021   ✗     87.6s   712,155   17   │  ✗     83.7s   468,979   16    1.00
+Q022   ✗     62.2s   325,683   14   │  ✗     58.2s   252,900   11    0.00
+Q023   ✓     20.7s    69,109    6   │  ✓     12.7s    26,649    4    1.00
+Q024   ✓     80.3s   532,415   16   │  ✗     97.3s   479,926   16    0.33 (regressed)
+Q025   ✓     13.6s    39,795    5   │  ✗     89.0s   560,547   17    0.33 (regressed)
+
+────────────────────────────────────────────────────────────────────────
+INTERPRETATION
+────────────────────────────────────────────────────────────────────────
+
+Accuracy (-2): Dropped from 12/25 to 10/25. Three regressions (Q016, Q024, Q025)
+  were only partially offset by one fix (Q020). All are attributable to LLM
+  variance at temperature=1.0 — not the child signature, which never activated.
+
+Tokens in (-10.0%): Consistent improvement across all three batches (-9% to -11%).
+  Notable drops: Q006 (843k→368k), Q012 (339k→171k), Q018 (389k→81k).
+  The model gives up or finds answers faster in some runs.
+
+Latency (+19%): Worse overall, but driven by variance on a few questions
+  (Q007: 63s→116s, Q010: 73s→117s, Q025: 14s→89s).
+
+Gold recall improvements: Q004 (0.00→1.00), Q008 (0.00→1.00), Q020 (1.00→1.00
+  and now correct), Q016 (now finds docs but still wrong answer).
+
+Iterations: Essentially unchanged (-0.2 on average).
+
+────────────────────────────────────────────────────────────────────────
+CONCLUSION
+────────────────────────────────────────────────────────────────────────
+
+After 25 questions, the child signature has had no measurable positive impact
+because delegation was never triggered. The parent agent always chooses to
+handle everything inline.
+
+Root cause: children have no search tools, so the parent has no reason to
+delegate — it can't hand off a search task to a child that can't search.
+
+Proposed next step: give child agents search_index + get_document tools so
+the parent can delegate independent sub-questions for parallel investigation.
+This matches the original design intent and should actually trigger delegation
+on multi-clue questions.

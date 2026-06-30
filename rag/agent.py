@@ -19,13 +19,14 @@ from __future__ import annotations
 
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 
 import dspy
 from dotenv import load_dotenv
 from dspy.utils.usage_tracker import track_usage
 
-from .signatures import BrowseCompSignature
+from .signatures import BrowseCompSignature, ChildBrowseCompSignature
 from .tools import RemoteRetriever as FaissRetriever
 
 load_dotenv()
@@ -84,6 +85,9 @@ def build_lm() -> dspy.LM:
     )
 
 
+CHILD_MAX_ITERATIONS = 6  # children are focused tasks, not full searches
+
+
 def build_rlm_agent(
     retriever: FaissRetriever,
     depth: int = 0,
@@ -113,6 +117,8 @@ def build_rlm_agent(
     # Tools                                                                #
     # ------------------------------------------------------------------ #
 
+    is_child = depth > 0
+
     def search_index(query: str, top_k: int = 10) -> list[dict]:
         """Search the BrowseComp+ corpus for relevant passages.
 
@@ -137,17 +143,17 @@ def build_rlm_agent(
 
     tools = [search_index, get_document]
 
-    if depth < max_depth:
+    if depth < max_depth and not is_child:
 
         def delegate(sub_question: str, sub_context: str = "") -> str:
             """Launch an independent child agent to answer a sub-question.
 
-            Each delegate() has its own fresh retrieval session, letting you
-            investigate multiple clues without contaminating each other.
+            The child receives the documents you pass as context and reasons
+            over them without searching the corpus again.
 
             Args:
                 sub_question: The specific sub-question to investigate.
-                sub_context:  Optional extra context string for the child agent.
+                sub_context:  Documents / text to pass to the child as context.
             Returns:
                 The child agent's answer as a string.
             """
@@ -156,20 +162,52 @@ def build_rlm_agent(
                 retriever=retriever,
                 depth=depth + 1,
                 max_depth=max_depth,
-                max_iterations=max_iterations,
+                max_iterations=CHILD_MAX_ITERATIONS,
                 metrics=metrics,
                 verbose=verbose,
             )
-            question = sub_question
-            if sub_context:
-                question = f"{sub_context}\n\n{sub_question}"
-            result = child_rlm(question=question)
+            result = child_rlm(context=sub_context, query=sub_question)
             return str(getattr(result, "answer", result))
 
         tools.append(delegate)
 
+        def delegate_batch(tasks: list[dict]) -> list[str]:
+            """Spawn multiple child agents IN PARALLEL, one per task.
+
+            Each task is a dict with keys:
+                query        - the sub-question for the child
+                context      - full document text to pass to the child (can be "")
+                parent_query - the original question for broader orientation
+
+            Returns answers in the same order as tasks.
+            All children run concurrently — total time ≈ slowest child, not sum.
+            Use when you have 2+ independent sub-questions to investigate.
+            """
+            def run_task(idx_task):
+                idx, task = idx_task
+                sub_question = task.get("query", "")
+                sub_context = task.get("context", "")
+                parent_q = task.get("parent_query", "")
+                if parent_q and sub_context:
+                    sub_context = f"Parent question: {parent_q}\n\n{sub_context}"
+                elif parent_q:
+                    sub_question = f"Parent question: {parent_q}\n\n{sub_question}"
+                return idx, delegate(sub_question, sub_context)
+
+            results = [None] * len(tasks)
+            with ThreadPoolExecutor(max_workers=len(tasks)) as pool:
+                futures = {pool.submit(run_task, (i, t)): i for i, t in enumerate(tasks)}
+                for future in as_completed(futures):
+                    idx, answer = future.result()
+                    results[idx] = answer
+            return results
+
+        tools.append(delegate_batch)
+
+    signature = ChildBrowseCompSignature if is_child else BrowseCompSignature
+
     rlm = dspy.RLM(
-        signature=BrowseCompSignature,
+        signature=signature,
         tools=tools,
         max_iterations=max_iterations,
         verbose=verbose,

@@ -1,0 +1,32 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q21–Q21  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 22:18
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 0/1 (0.0%)
+Avg latency       : 104.5s
+Avg tokens in/out : 555156 / 5114
+Avg iterations    : 15.0
+Avg delegations   : 5.0
+Avg unique docs   : 49.0
+
+Retrieval Recall:
+  Gold recall     : 1.000
+  Evidence recall : 1.000
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q021] ✗  In a particular match of a snooker championship played before 2022, the followin
+       Answer    : Unknown
+       Gold      : 1419
+       Iters=15  Deleg=5  Docs=49  Lat=104.5s  Tok=555156/5114
+       Gold recall=1.00  Evid recall=1.00

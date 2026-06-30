@@ -1,0 +1,32 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q52–Q52  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-29 17:01
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 0/1 (0.0%)
+Avg latency       : 79.0s
+Avg tokens in/out : 342397 / 5821
+Avg iterations    : 13.0
+Avg delegations   : 0.0
+Avg unique docs   : 197.0
+
+Retrieval Recall:
+  Gold recall     : 0.500
+  Evidence recall : 0.600
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q052] ✗  Two literary creations have the same author. One is a novel reviewed in a post o
+       Answer    : 19th century; England
+       Gold      : 19th century; Spain
+       Iters=13  Deleg=0  Docs=197  Lat=79.0s  Tok=342397/5821
+       Gold recall=0.50  Evid recall=0.60

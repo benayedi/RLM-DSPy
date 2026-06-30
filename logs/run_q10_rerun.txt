@@ -1,0 +1,32 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q10–Q10  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-06-30 08:15
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 1/1 (100.0%)
+Avg latency       : 47.1s
+Avg tokens in/out : 257827 / 4167
+Avg iterations    : 11.0
+Avg delegations   : 0.0
+Avg unique docs   : 57.0
+
+Retrieval Recall:
+  Gold recall     : 0.000
+  Evidence recall : 0.000
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q010] ✓  The league football match occurred between 1992 and 2023 (inclusive).  The match
+       Answer    : Raheem Sterling
+       Gold      : Raheem Sterling
+       Iters=11  Deleg=0  Docs=57  Lat=47.1s  Tok=257827/4167
+       Gold recall=0.00  Evid recall=0.00
