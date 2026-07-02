@@ -41,6 +41,7 @@ class RunMetrics:
     output_tokens: int = 0
     iterations: int = 0
     delegation_calls: int = 0
+    search_calls: int = 0
     retrieved_doc_ids: list = field(default_factory=list)
 
     @property
@@ -127,6 +128,7 @@ def build_rlm_agent(
         Tip: scores below 0.30 are usually off-topic — try a different query.
         """
         results = retriever.search_index(query, top_k=top_k)
+        metrics.search_calls += 1
         metrics.retrieved_doc_ids.extend(r["doc_id"] for r in results)
         return results
 

@@ -1,0 +1,229 @@
+================================================================================
+RAG+RLM OPTIMIZATION NOTES — BrowseComp+
+================================================================================
+
+System: dspy.RLM + FAISS (Qwen3-Embed-8B, 4096-dim, GPU) + Azure gpt-5.4-mini
+Baseline: 17/35 (48.6%), avg latency 54.1s  [run_q1_q35_opt3_final.json]
+Q1–Q15 after prompt work: 7/15 correct (+1 net vs baseline 6/15)
+
+--------------------------------------------------------------------------------
+SYSTEM OVERVIEW
+--------------------------------------------------------------------------------
+
+The agent runs in a Python REPL (dspy.RLM). Each iteration it writes code,
+sees output, then decides the next step. State persists across turns.
+
+Tools available:
+  search_index(query)     → dense retrieval (Qwen3-Embed-8B + FAISS on GPU)
+  get_document(doc_id)    → fetch full doc text (from in-memory corpus)
+  delegate(sub_q, ctx)    → spawn child agent (max 6 iterations)
+  delegate_batch(tasks)   → spawn multiple children in parallel
+  llm_query(prompt)       → single sub-LLM call for extraction/reasoning
+  SUBMIT(answer=...)      → final answer, terminates the run
+
+Retrieval: 100,195 documents, 1 vector per document (no chunking).
+Documents truncated to 2000 chars in search snippets; full text via get_document.
+Scores are cosine similarities. Threshold >=0.65 = strong hit.
+
+--------------------------------------------------------------------------------
+PROMPT RULES ADDED / MODIFIED
+--------------------------------------------------------------------------------
+
+RULE 0 — PRE-SEARCH ANALYSIS (new)
+  Before any search, the agent asks: "Is there a named entity I can search for?"
+
+  Case A: Named entity exists → rank clues by specificity, search most specific first.
+    Specificity ranking (highest → lowest):
+      1. Verbatim quote or unusual statement
+      2. Named institution / specific event with a named entity
+      3. Named work (novel, film) or character reference
+      4. Rare statistical coincidence
+      5. Biographical facts (poverty, absent father) — LEAST specific
+    Numbers (scores, timings, dates) are NEVER search anchors — use to VERIFY.
+
+  Case B: No named entity — all clues are descriptions.
+    Step B-1: Resolve indirect references first using llm_query.
+      If a clue says "same year as X" or "when Y happened", call llm_query to
+      convert it to a concrete value before delegating.
+    Step B-2: delegate() with sub_context="" so child reasons from parametric
+      knowledge to identify the entity name, then parent searches with that name.
+
+RULE 1 — EARLY EXIT with constraint verification (modified)
+  If first search directly answers AND satisfies ALL constraints → SUBMIT.
+  Added: "VERIFY before submitting — re-read every constraint."
+  Rationale: Model was submitting too early (e.g. Q20 committed to wrong answer
+  before verifying the "born same day" constraint).
+
+RULE 2 — DELEGATE when score >=0.65 found at iteration 4+
+  Only delegate when relevant docs exist. Delegating without docs wastes child
+  budget (6 iter cap) on empty searches.
+
+RULE 3 — COMMIT at iteration 15
+  Stop searching, commit best-supported candidate. SUBMIT("Unknown") only as
+  last resort.
+
+OTHER STRATEGIES ADDED:
+  - Anchor-clue strategy: search most specific clue first, use result to anchor
+    subsequent searches.
+  - Multi-hop timeline: chain searches when clues span multiple years about same
+    entity (earliest event → name → later event).
+  - Indirect-reference resolution: when clue says "same year as X", resolve X
+    to concrete value with llm_query BEFORE delegating.
+  - Extraction pattern: when score >=0.65 found, use llm_query with ANSWER: format
+    for clean extraction (no double-check calls — adds tokens with no benefit).
+  - Programmatic intersection fallback: search each clue separately, extract
+    candidate names, intersect in Python.
+
+--------------------------------------------------------------------------------
+WHY QUESTIONS FAIL — ROOT CAUSE TAXONOMY
+--------------------------------------------------------------------------------
+
+TYPE 1: RETRIEVAL MISS — clue descriptions don't surface gold doc
+  The gold doc IS in the corpus but requires knowing the entity name to find it.
+  Clue-description searches score too low (~0.50) to trigger extraction.
+  Examples: Q8 (Diamond Jenness), Q15 (Kwesi Arthur)
+  Pattern: All clues are biographical/descriptive with no searchable name.
+  Partial fix: Case B delegation — but only works if model's parametric knowledge
+  correctly identifies the entity. Fails for niche historical figures (Q8).
+
+TYPE 2: PARAPHRASE GAP — benchmark deliberately changes wording
+  Question uses different words than the document.
+  Example: Q15 clue says "frontline of the revolt" but doc says "forefront of
+  this revolution". Exact phrase not found anywhere in corpus (0 docs).
+  Neither keyword search NOR embedding search can bridge this reliably.
+  Embedding scores ~0.55 — below threshold. This is by design in BrowseComp+.
+
+TYPE 3: WRONG ANCHOR CLUE — model searches least specific clue first
+  Model anchors on a number, date, or common biographical fact instead of the
+  most specific clue.
+  Example: Q10 — model anchored on goal timings (6', 35', 75'...) instead of
+  the team names. Spent all 15 iters on timing-based searches.
+  Fix: "Numbers are NEVER search anchors — use to VERIFY." Added to RULE 0.
+
+TYPE 4: WRONG CANDIDATE — model identifies wrong entity
+  Model finds a plausible but incorrect candidate and commits to it.
+  Example: Q25 — model found Jeanette Winterson (poverty, factory work) but
+  correct author was Mieko Kawakami ("grew taller after finishing" quote).
+  Fix: Specificity ranking — verbatim quotes (rank 1) searched first. Q25 fixed.
+
+TYPE 5: EARLY EXIT ON WRONG ANSWER — RULE 1 misfire
+  Model exits early after finding a doc that partially matches but fails
+  hidden constraints.
+  Example: Q20 — model found Meghan/Harry birth date without verifying "same
+  birthday as first child" constraint. Submitted wrong date.
+  Fix: Added constraint verification to RULE 1.
+
+TYPE 6: MULTI-HOP CHAIN TOO LONG
+  Question requires 3+ hops (resolve clue → find entity → find sub-entity →
+  extract answer). Each hop has retrieval uncertainty. Errors compound.
+  Example: Q19 — journal article → curcumin → paper → author.
+
+TYPE 7: CHILD AGENT KNOWLEDGE FAILURE
+  Case B delegation works correctly, but the child agent misidentifies the entity
+  due to unreliable parametric knowledge.
+  Example: Q8 — child correctly tries to reason from "born 1886, shaman 1915"
+  but identifies "Margaret Mead" (wrong) instead of "Diamond Jenness".
+
+TYPE 8: CONTEXT ACCUMULATION — token blowup
+  Iterative REPL accumulates all prior outputs in context. By iteration 15,
+  context carries ~300-500K tokens. This makes failed runs extremely expensive.
+  Token cost compounds: iter 1 ≈ 5K tokens, iter 15 ≈ 300K+ tokens.
+  Fix: Reduce iterations via better anchor strategies (Q9: 15→4 iters, -400K tok).
+
+--------------------------------------------------------------------------------
+PER-QUESTION RESULTS (Q1–Q20)
+--------------------------------------------------------------------------------
+
+Q01  ✓→✓   Stable. Simple factual with named entity.
+Q02  ✓→✓   Stable. More expensive now (+174K tokens) but still correct.
+Q03  ✓→✓   Previously broke when double-check was added (15 iters, "Unknown").
+            Reverted to single-pass ANSWER: format. Now stable.
+Q04  ✗→✗   Persistent failure. Type 1/6.
+Q05  ✗→✗   Persistent failure. Retrieves wrong missing-person doc (white shirt
+            instead of red). Gold doc not surfaced with clue queries.
+
+Q06  ✗→✗   Gold docs findable with "Georgia Hirst Vikings actress" (score 0.793)
+            but model doesn't know to search that name. Type 1.
+Q07  ✗→✗   Gold doc findable with "Song of Achilles Circe Orange Prize" (0.677)
+            but model searches wrong anchors. Much cheaper now (-566K tokens).
+Q08  ✗→✗   Diamond Jenness (born 1886). Type 1+7. Child misidentifies as
+            Margaret Mead. Gold docs findable only once name is known.
+            Clue-based searches score ~0.51 — below threshold.
+Q09  ✗→✓   FIXED. RULE 0 Case A: anchor on Passionflix/Tosca → Elon Musk →
+            Riette Nel article → age 21. 15 iters → 4 iters, -400K tokens.
+Q10  ✓→✗   LOST. RULE 0 anchored on goal timings (numbers) despite the
+            "never use numbers" rule. Gold doc findable with team names (0.635).
+
+Q11  ✓→✓   Stable. Cheaper (-30K tokens).
+Q12  ✓→✓   Stable but more expensive (+231K tokens). Delegation got complex.
+Q13  ✗→✓   FIXED. Anchor strategy worked. -265K tokens, -3 iters.
+Q14  ✗→✗   Persistent. 0 searches, 3 delegations, wrong answer (Shashi Kapoor /
+            Kamal Haasan vs Kiran Shah). Model delegates without searching corpus.
+Q15  ✗→✗   Kwesi Arthur. Type 2+7. "Frontline of revolt" is paraphrased from
+            "forefront of this revolution" in the doc. Case B now correctly
+            resolves Sapphire Jubilee → 2017 via llm_query, but child cannot
+            identify Kwesi Arthur from remaining descriptive clues.
+
+Q16  ✓→✓   Correct but very expensive: 25 iters, 1.1M tokens (vs 11 iters, 178K).
+            RULE 0 pre-analysis adding overhead for questions that were easy before.
+Q17  ✓→✗   LOST. Predicted "Ellos" vs gold "Manos". Early exit (4 iters) on
+            wrong candidate. Type 5.
+Q18  ✗→✗   Jadal (Jordanian band). Persistent failure.
+Q19  ✗→✗   Journal article → curcumin → paper title. Type 6 (too many hops).
+Q20  ✗→✗   Scout/29-Feb fix worked in isolated test but regressed in batch run.
+            Temperature=1.0 causes run-to-run variance. Type 5 variance.
+
+--------------------------------------------------------------------------------
+KEY FINDINGS
+--------------------------------------------------------------------------------
+
+1. TEMPERATURE IS LOCKED AT 1.0
+   GPT-5 class models (gpt-5.4-mini) only support temperature=1. The API rejects
+   any other value. Run-to-run variance is unavoidable — some fixes work in
+   isolation but fail in batch runs (e.g. Q20).
+
+2. NO CHUNKING IN RETRIEVAL
+   100,195 docs, 1 vector per doc (whole document embedded, max 8192 tokens).
+   ~20% of docs truncated during embedding. Gold docs for Q1-Q20 mostly small
+   (< 15K chars), so truncation is not the main failure cause.
+   Chunking would improve retrieval for passage-specific clues but requires
+   rebuilding the index with millions of chunk vectors.
+
+3. EMBEDDING VS KEYWORD RETRIEVAL
+   BrowseComp+ deliberately paraphrases clues (different words than the doc).
+   Pure keyword/phrase search also fails for paraphrased clues.
+   Dense embeddings capture semantic similarity but dilute rare phrases.
+   Hybrid retrieval (dense + BM25) would help for some cases.
+
+4. PARAMETRIC KNOWLEDGE IS UNRELIABLE FOR NICHE ENTITIES
+   The Case B delegation strategy (reason from knowledge → name → search) works
+   for well-known entities (Q9: Elon Musk) but fails for niche figures
+   (Q8: Diamond Jenness, Q15: Kwesi Arthur).
+
+5. REPL CONTEXT ACCUMULATION IS THE MAIN COST DRIVER
+   Each iteration adds all prior outputs to context. 15 iterations = 300-500K
+   input tokens. Getting the answer in 3-5 iters instead of 15 cuts cost 10x.
+   Token efficiency improvements matter more than per-search cost.
+
+6. RULE 0 ADDS OVERHEAD FOR EASY QUESTIONS
+   The mandatory pre-search analysis helps hard questions but slows easy ones
+   (Q16: 11→25 iters, 178K→1.1M tokens). RULE 0 may need to be lighter or
+   conditional for questions where a named entity is immediately obvious.
+
+--------------------------------------------------------------------------------
+RETRIEVAL SCORES FOR KEY QUESTIONS (manual tests)
+--------------------------------------------------------------------------------
+
+Q06  "Georgia Hirst Vikings actress"          → gold doc score 0.793
+Q07  "Song of Achilles Circe Orange Prize"    → gold doc score 0.677
+Q08  "Diamond Jenness Arctic 1886"            → gold doc score 0.759
+     "Diamond Jenness shaman 1915"            → gold doc score 0.681
+     "Arctic expedition 1915 shaman foreign"  → gold doc score 0.518 (too low)
+Q09  "Passionflix Tosca Riette Nel"           → gold doc score 0.681
+Q10  "Chelsea Tottenham 2023 Pochettino"      → gold doc score 0.635
+Q15  "Kwesi Arthur Ghana rapper birth name"   → gold doc score 0.810
+     "Kwesi Arthur frontline revolt"          → doc 75392 score 0.552 (too low)
+     "frontline of the revolt" (exact phrase) → 0 docs in corpus
+     actual doc text: "forefront of this revolution" (paraphrase gap)
+
+================================================================================

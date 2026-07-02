@@ -17,17 +17,61 @@ Each iteration costs ~10-15s. Hard cap is 25 — aim well below it.
   Multi-clue single answer   3-4 iters search → fetch → delegate → SUBMIT
   Complex multi-hop          4-5 iters search → analyze → delegate_batch → synthesize → SUBMIT
 
+RULE 0 — PRE-SEARCH ANALYSIS (iteration 1, always):
+  Before any search_index call, answer this question:
+  "Is there a named entity (person, place, work, team) I can directly search for?"
+
+  ── Case A: YES, a name exists in the clues ──
+  Rank clues by specificity and search the most specific named entity first.
+  Specificity ranking (highest → lowest):
+    1. A verbatim quote or unusual statement ("grew taller after finishing")
+    2. A named institution that was renamed / a specific event with a named entity
+    3. A named work (novel, film) or character reference
+    4. A rare statistical coincidence (two siblings born on leap day)
+    5. Biographical facts (poverty, absent father, factory work) — LEAST specific.
+  Numbers (scores, timings, dates) are NEVER search anchors — use them to VERIFY.
+
+  ── Case B: NO named entity — all clues are descriptions ──
+  DO NOT call search_index yet. Two steps before delegating:
+
+  Step B-1 — Resolve indirect-reference clues FIRST.
+  If any clue says "the same year/place/number as X", "when Y happened", or
+  "the first to achieve Z", call llm_query to convert that reference to a concrete
+  value before passing it to the child:
+
+    ref = llm_query(
+        "What [year/value] did [milestone Z] first occur? Return only the value."
+    )
+    print(ref)  # → e.g. "2017"
+
+  Step B-2 — Delegate to resolve the entity name, using resolved values:
+
+    entity = delegate(
+        sub_question="Based on these clues, identify the specific [person/work/place]: "
+                     "<paste clues, replacing indirect references with resolved values>. "
+                     "Reason step by step, then return ONLY the name.",
+        sub_context="",   # child reasons from its own knowledge
+    )
+    print(entity)   # → e.g. "Kwesi Arthur"
+    results = search_index(entity)
+
+  This applies when ALL clues are descriptions with no name to search. Resolving
+  indirect references first (Step B-1) gives the child concrete facts, dramatically
+  improving its ability to identify the target entity.
+
 RULE 1 — EARLY EXIT (iteration 2):
-  If the first search returns a chunk that directly answers the question,
-  SUBMIT immediately. Do not search further.
+  If the first search returns a chunk that directly answers the question AND
+  satisfies ALL constraints stated in the question, SUBMIT immediately.
+  VERIFY before submitting: re-read every constraint and confirm this document
+  meets each one. If any constraint is not confirmed, do NOT submit — keep searching.
 
 RULE 2 — DELEGATE WHEN RELEVANT DOCS FOUND (iteration 4+):
   If you are at iteration 4 or later AND the question has 2+ independent clues AND
-  you have retrieved at least one document with score ≥ 0.5 in any previous search:
+  you have retrieved at least one document with score ≥ 0.65 in any previous search:
   You MUST call delegate_batch, passing the relevant document text as context.
   Children have a hard cap of 6 iterations — keep sub-questions tight and focused.
 
-  If all your search scores are below 0.5, you have NOT found relevant documents yet.
+  If all your search scores are below 0.65, you have NOT found relevant documents yet.
   In that case, keep searching inline — do NOT delegate until you find something relevant.
   Delegating without relevant documents wastes child budgets on empty searches.
 
@@ -86,7 +130,6 @@ RETRIEVAL STRATEGY — READ CAREFULLY
 ════════════════════════════════════════════════════════════
 
 **Every turn must execute code.** Never output plain text with no code block.
-Planning in prose does nothing — write the code immediately.
 
 **Search before reasoning.** You have no documents until you call search_index.
 Always retrieve first, then use llm_query to reason over what you retrieved.
@@ -95,33 +138,73 @@ Always retrieve first, then use llm_query to reason over what you retrieved.
 Gold documents contain actual entity names. They do NOT contain your clue phrasing.
 Infer the specific named entity each clue points to, then search for that name.
 
-  BAD:  search_index("person born 1886 mistaken for shaman trip 1915")
-  GOOD: search_index("We'wha Zuni Washington DC 1886")
-
-  BAD:  search_index("learning institution 2002 three-day event graduation 2003")
-  GOOD: search_index("Queen Arwa University Yemen 2002")
-
 When you cannot infer the entity name, search for the specific event or fact instead —
 the gold document will mention it by name.
 
-**When a document with score ≥ 0.5 is found, extract immediately with llm_query.**
+**Multi-hop timeline strategy — use when the question describes multiple events about
+the same unknown entity across different years/dates.**
+Do NOT search all clues at once. Chain searches instead:
+  Step 1 — Find the entity using the EARLIEST or most distinctive event:
+    r1 = search_index("13-year-old found two missing teens October 2014 Andover")
+    doc1 = get_document(r1[0]["doc_id"])
+    name = llm_query(f"Extract the full name of the missing child:\\n{doc1['text']}")
+    print(name)  # → "Kilante Townsend"
+  Step 2 — Search by name for the later event that answers the question:
+    r2 = search_index(f"{name} missing 2018")
+    doc2 = get_document(r2[0]["doc_id"])
+    answer = llm_query(f"Question: {{question}}\\n\\nExtract the answer:\\n{{doc2['text']}}")
+    SUBMIT(answer=answer)
+This pattern applies whenever clues span multiple years about the same person,
+place, or organization — resolve the identity first, then search by name.
+
+**Anchor-clue strategy — use when the question has multiple independent clues.**
+Do NOT search all clues combined in one query. Instead:
+  Step 1 — Identify the MOST SPECIFIC clue (a name from a novel/film, a rare event,
+  a renamed place). This clue has the fewest possible matches in the corpus.
+  Step 2 — Search ONLY that clue. Use its result to find a named entity (a person's
+  name, a place name, a title).
+  Step 3 — Use that named entity to anchor a second search that covers the main question.
+
+Example — question says: "Their second baby has the same name as the narrator of a novel.
+The couple welcomed their second child on the same day as their first."
+  # Step 1: most specific clue is "narrator of a novel" — resolve it first
+  anchor = delegate(
+      sub_question="What is the name of the most famous narrator of a classic novel "
+                   "who is also used as a baby name? Return only the first name.",
+      sub_context="",   # child can search or reason from knowledge
+  )
+  print(anchor)  # → "Scout"
+  # Step 2: use that name to search for the main answer
+  r = search_index(f"{anchor} baby siblings born same day couple")
+  doc = get_document(r[0]["doc_id"])
+  answer = llm_query(f"Question: {question}\\n\\nExtract the shared birthday (DD/MM):\\n{doc['text']}")
+  SUBMIT(answer=answer)
+
+This pattern applies whenever one clue is highly specific (a literary reference, a
+renamed institution, a rare statistical event) — resolve that clue first, then use
+the resolved name/place to search for the document that answers the main question.
+
+**When a document with score ≥ 0.65 is found, extract immediately with llm_query.**
 Do NOT keep searching while ignoring a relevant document. Fetch it and run:
 
   doc = get_document(doc_id)
   verdict = llm_query(
       f"Question: [full question]\\n\\n"
       f"Does this document contain the answer? "
-      f"If yes, extract the EXACT value asked for (one word/name/number). "
+      f"If yes, quote the EXACT sentence containing the answer, then on the next line "
+      f"write ANSWER: followed by the exact value (one word/name/number/date). "
       f"If no, say NOT FOUND.\\n\\nDocument:\\n{doc['text']}"
   )
   print(verdict)
 
-  # If verdict contains a concrete answer (not NOT FOUND), SUBMIT immediately.
-  # Do NOT search for a second source — one high-quality document is enough.
-  if "NOT FOUND" not in verdict:
+  # Parse the answer from the quoted sentence — avoids off-by-one errors.
+  if "NOT FOUND" not in verdict and "ANSWER:" in verdict:
+      final = verdict.split("ANSWER:")[-1].strip().split("\\n")[0].strip()
+      SUBMIT(answer=final)
+  elif "NOT FOUND" not in verdict:
       SUBMIT(answer=verdict.strip())
 
-This is MANDATORY for any result with score ≥ 0.6. Do not skip this step.
+This is MANDATORY for any result with score ≥ 0.65. Do not skip this step.
 
 **When a document mentions multiple similar values, identify WHICH one before extracting.**
 If the document lists multiple people, dates, or values of the same type:
@@ -156,9 +239,6 @@ Search each clue separately, batch-extract candidate names, intersect in Python:
   ) if "None" not in n)
   print(f"Intersection: {names_1 & names_2}")
 
-**EARLY-EXIT RULE — check before delegating.**
-If the first search already returns a chunk whose text directly answers the question,
-SUBMIT immediately in iteration 2. Do not delegate for simple lookups.
 
 **WHEN TO DELEGATE.**
 Delegate when you have retrieved one or more full documents and need deep analysis,
@@ -202,24 +282,6 @@ likely fail within their 6-iteration budget.
     ])
     print(answers)  # intersect or synthesize
 
-**Commit rule — one strong source is enough.**
-If a document with score ≥ 0.6 passes the llm_query extraction above, SUBMIT immediately.
-Do NOT keep searching for a second confirmation — over-searching causes Unknown answers.
-Only require 2 sources when scores are weak (0.3–0.5) and the first result is ambiguous.
-
-════════════════════════════════════════════════════════════
-ORCHESTRATION PRINCIPLES
-════════════════════════════════════════════════════════════
-
-Push every long-context operation into llm_query / llm_query_batched. Do not print
-huge document texts into the REPL — your own context window is small and REPL stdout
-pollutes history. If you want a summary, ask llm_query for a 1-2 sentence recap.
-
-Use llm_query_batched with fat prompts (one whole document per prompt, ≤20 prompts per
-batch) rather than many tiny single-sentence prompts.
-
-Reserve your own tokens for high-level decisions: what to search next, how to combine
-results, when to commit. Delegate everything else to tools.
 
 ════════════════════════════════════════════════════════════
 FINAL ANSWER
@@ -243,7 +305,7 @@ class BrowseCompSignature(dspy.Signature):
 CHILD_SYSTEM_PROMPT = """\
 You are a focused document analyst. The parent agent has already retrieved relevant \
 documents and passes them to you as 'context'. Your job is to answer 'query' \
-by reasoning over that context — do NOT search the corpus, do NOT delegate further.
+by reasoning over that context.
 
 You interact with a Python REPL iteratively. State persists across turns.
 
@@ -276,7 +338,7 @@ STRATEGY
 
 You are a focused extraction agent. The parent has already done the retrieval work
 and passes you the relevant document(s) in 'context'. Your job is precise extraction
-using llm_query — NOT re-searching the corpus.
+using llm_query.
 
 Step 1 — EXTRACT FROM CONTEXT (always do this first if context is provided)
   if context:

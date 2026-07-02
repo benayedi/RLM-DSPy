@@ -188,7 +188,7 @@ def run_one(
     symbol = "✓" if correct else "✗"
     print(
         f"  [{symbol}] Pred={predicted[:80]!r}  Gold={gold!r}\n"
-        f"      iters={metrics.iterations}  deleg={metrics.delegation_calls}"
+        f"      iters={metrics.iterations}  searches={metrics.search_calls}  deleg={metrics.delegation_calls}"
         f"  docs={metrics.unique_docs_retrieved}  lat={metrics.latency_s:.1f}s"
         f"  tok={metrics.input_tokens}/{metrics.output_tokens}"
         f"  gold_recall={gold_recall:.2f}  evid_recall={evid_recall:.2f}"
@@ -204,6 +204,7 @@ def run_one(
         "input_tokens": metrics.input_tokens,
         "output_tokens": metrics.output_tokens,
         "iterations": metrics.iterations,
+        "search_calls": metrics.search_calls,
         "delegation_calls": metrics.delegation_calls,
         "unique_docs": metrics.unique_docs_retrieved,
         "gold_recall": gold_recall,
