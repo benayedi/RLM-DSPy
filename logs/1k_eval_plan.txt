@@ -1,0 +1,123 @@
+================================================================================
+BrowseComp+ 1K-Document Evaluation — Implementation Plan
+Replicating Zhang & Khattab (RLM paper, 2025) BrowseComp+(1K) setup
+================================================================================
+
+GOAL
+────
+Test the RLM agent on 150 questions where each question is guaranteed to have
+its gold+evidence documents in a curated 1K-doc pool. This matches the RLM
+paper's BrowseComp+(1K) setup, which achieved 51.0 accuracy with RLM(GPT-5,
+depth=1) vs 0.0 for base GPT-5.
+
+WHY 1K DOCS INSTEAD OF 100K
+────────────────────────────
+Current setup: 100K docs, FAISS search, gold recall ~0.0–0.33 (retrieval is
+the bottleneck). With 1K docs, gold docs are guaranteed present → measures
+pure reasoning ability, not retrieval quality.
+
+ARCHITECTURE
+────────────
+Current (100K):
+  Local eval → HTTP /search (GPU embeds + FAISS) → HTTP /document (GPU)
+
+1K mode:
+  Local eval → /encode (GPU, query only) → local cosine-sim in 1K pool
+             → local text lookup (corpus cached locally)
+
+Components:
+  - Local pkl shards already at:
+      BrowseComp-Plus/indexes/qwen3-embedding-8b/corpus.shard{1..4}_of_4.pkl
+  - Format: tuple( ndarray[N×4096, float32], list[doc_id] )
+  - Local HF corpus cache: Tevatron/browsecomp-plus-corpus (100K docs + texts)
+  - GPU server: only needed for /encode endpoint (query embedding)
+
+================================================================================
+STEP-BY-STEP IMPLEMENTATION
+================================================================================
+
+STEP 1 — Prepare 1K pools (run locally, one-time setup)
+─────────────────────────────────────────────────────────
+Script: scripts/prepare_1k_pools.py
+
+What it does:
+  a. Load all 4 pkl shards → build doc_id → vector index (100K docs)
+  b. Load BrowseComp+ questions dataset (HF cache), decrypt gold+evidence IDs
+  c. Randomly sample 150 questions from 830 (seed=42)
+  d. For each question:
+       pool = gold_ids ∪ evidence_ids + random fill to 1000 total
+  e. Save:
+       logs/pools/pools_150q.json   → {q_idx_str: [doc_id, ...], ...}
+       logs/pools/q_indices.json    → [q_idx, ...]  (150 entries)
+
+Output size: ~150 × 1000 doc IDs ≈ small JSON file
+
+STEP 2 — PoolRetriever (new class, lives in rag/pool_retriever.py)
+────────────────────────────────────────────────────────────────────
+Replaces RemoteRetriever for 1K eval. Has same interface (search_index,
+get_document) so agent code is unchanged.
+
+search_index(query, top_k):
+  1. Call GPU /encode endpoint with INSTRUCTION + query
+  2. Do local cosine similarity: pool_vectors @ query_vec  (1000 dot products)
+  3. Return top-k as [{score, doc_id, text (≤2000 chars snippet)}]
+
+get_document(doc_id):
+  1. Look up in local corpus_texts dict
+  2. Return {doc_id, text}
+
+Note: 1000 × 4096 matmul takes <1ms on CPU — no GPU needed for search.
+
+STEP 3 — 1K eval script (examples/browsecomp_1k_eval.py)
+──────────────────────────────────────────────────────────
+Same structure as browsecomp_eval.py but:
+  - Loads pools_150q.json + q_indices.json
+  - For each of 150 questions: instantiates PoolRetriever with that question's
+    1K pool vectors + texts
+  - Runs agent (unchanged)
+  - Reports same metrics (accuracy, latency, gold_recall, evid_recall)
+
+Expected gold_recall: 1.0 for all questions (guaranteed by pool construction).
+Expected accuracy improvement: mirrors paper's 51.0 vs our current ~30–35%.
+
+STEP 4 — Run
+─────────────
+  # One-time pool setup (local, takes ~3–5 min to load shards):
+  python scripts/prepare_1k_pools.py
+
+  # Evaluation (needs GPU server up for /encode):
+  python examples/browsecomp_1k_eval.py \
+      --pools logs/pools/pools_150q.json \
+      --q-indices logs/pools/q_indices.json \
+      --out logs/run_1k_150q
+
+GPU server needs: /encode endpoint only (for query embedding)
+  ssh tunnel: ssh -L 8001:localhost:8001 raid03
+
+================================================================================
+KEY DIFFERENCES VS CURRENT SETUP
+================================================================================
+
+                    Current (100K)          1K eval
+                    ──────────────          ───────
+Corpus size         100,195 docs            1,000 docs per question
+Gold recall         ~0.0–0.33               1.0 (guaranteed)
+Search method       FAISS (GPU)             cosine-sim (local CPU)
+Doc texts           GPU /document           Local HF cache
+Query embed         GPU /encode             GPU /encode (same)
+Agent code          unchanged               unchanged
+Prompt              unchanged               unchanged
+
+Expected comparison:
+  - 1K eval accuracy >>  100K accuracy   → confirms retrieval is the bottleneck
+  - 1K eval accuracy == paper's 51.0     → validates our agent matches paper
+
+================================================================================
+FILES CREATED
+================================================================================
+
+  scripts/prepare_1k_pools.py      one-time pool builder
+  rag/pool_retriever.py            PoolRetriever class
+  examples/browsecomp_1k_eval.py   evaluation script
+  logs/pools/pools_150q.json       (generated by step 1)
+  logs/pools/q_indices.json        (generated by step 1)
