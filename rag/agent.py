@@ -91,6 +91,7 @@ def build_rlm_agent(
     max_iterations: int = 25,
     metrics: RunMetrics | None = None,
     verbose: bool = False,
+    default_top_k: int = 10,
 ) -> tuple[dspy.RLM, RunMetrics]:
     """
     Build a dspy.RLM agent with FAISS retrieval and delegation tools.
@@ -102,6 +103,7 @@ def build_rlm_agent(
         max_iterations: Max REPL iterations per agent call.
         metrics:        Shared RunMetrics (created fresh if None at depth=0).
         verbose:        Enable dspy.RLM verbose logging.
+        default_top_k:  Default number of results returned by search_index.
 
     Returns:
         (rlm, metrics) — call rlm(question=...) to run.
@@ -113,7 +115,7 @@ def build_rlm_agent(
     # Tools                                                                #
     # ------------------------------------------------------------------ #
 
-    def search_index(query: str, top_k: int = 10) -> list[dict]:
+    def search_index(query: str, top_k: int = default_top_k) -> list[dict]:
         """Search the BrowseComp+ corpus for relevant passages.
 
         Returns list of {score: float, doc_id: str, text: str (≤2000 chars)}.
@@ -184,6 +186,7 @@ def run_question(
     max_depth: int = 5,
     max_iterations: int = 25,
     verbose: bool = False,
+    default_top_k: int = 10,
 ) -> tuple[str, RunMetrics]:
     """
     Convenience wrapper: build a fresh agent, run one question, return (answer, metrics).
@@ -195,6 +198,7 @@ def run_question(
         max_depth=max_depth,
         max_iterations=max_iterations,
         verbose=verbose,
+        default_top_k=default_top_k,
     )
 
     with track_usage() as tracker:
