@@ -9,7 +9,8 @@ Configuration
   Model              : gpt-5.4-mini (Azure OpenAI)
   Embeddings         : Qwen3-Embed-8B (Tevatron pre-built, 4096-dim)
   Retriever          : FAISS IndexFlatIP (100,195 vectors, GPU)
-  Default top_k      : 10
+  Evaluator : LLM-as-judge (gpt-5.4-mini, official BrowseComp+ GRADER_TEMPLATE)
+  Default top_k      : 10lu
   Max iterations     : 25
   Max depth          : 5
   Temperature        : 1.0 (gpt-5.4-mini only supports 1.0)
