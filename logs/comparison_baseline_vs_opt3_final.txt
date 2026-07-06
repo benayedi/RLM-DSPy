@@ -91,3 +91,47 @@ Q035   One Red Rose                                ✓ One Red Rose        ✓ O
 NOTE: Q021 not actively fixed (requires arithmetic over multi-match snooker document).
       Temperature=1.0 causes run-to-run variance; losses vs baseline likely stochastic.
 ────────────────────────────────────────────────────────────────────────────────────
+====================================================================================
+BrowseComp+ Evaluation — Baseline vs. Delegation (Q36–Q55)
+====================================================================================
+
+                          Baseline        Opt3+Deleg+Commit
+Accuracy          :       6/20 (30.0%)         6/20 (30.0%)
+Avg latency       :       41.5s            117.4s
+Avg tokens in     :       270,184       280,239
+Avg tokens out    :       4,232         3,929
+Avg iterations    :       10.8             10.7
+Total delegations :       0               12
+Avg gold recall   :       0.428           0.398
+
+Gains  (+2): Q051, Q052
+Losses (-2): Q040, Q045
+
+  GAIN  Q051: 'Sandie Hatch'  (gold='Sandie Hatch')
+  GAIN  Q052: '19th century; Spain'  (gold='19th century; Spain')
+  LOSS  Q040: now='Unknown'  was='?'
+  LOSS  Q045: now='Theories of intelligence and achievement across the junior high school transition: A longitudinal study and an intervention'  was='?'
+
+------------------------------------------------------------------------------------
+  Q      Gold                                       Baseline               Opt3+Deleg              
+  ----------------------------------------------------------------------------------------------------
+  Q036  Professional Pests                         ✓  17.3s    43,800tok   ✓  10.8s    14,051tok  dc=0 
+  Q037  Energetic; melodic; banging; clubby; bac   ✗  58.4s   527,252tok   ✗  48.3s   452,091tok  dc=0 
+  Q038  Genetics Nepal Pvt. Ltd                    ✓  25.8s    81,354tok   ✓  35.4s   194,950tok  dc=0 
+  Q039  94%                                        ✗  72.2s   565,427tok   ✗  51.8s   422,009tok  dc=0 
+  Q040  2004                                       ✓  20.3s    43,846tok   ✗  64.2s   385,788tok  dc=2 ↓
+  Q041   Nejib Ben Azouz                           ✓  21.1s    63,153tok   ✓   9.5s    25,272tok  dc=0 
+  Q042  Sunset at Biafra                           ✗  23.1s    72,468tok   ✗  24.5s    88,111tok  dc=0 
+  Q043  Edwin Hughes Kendrick                      ✗  34.4s   146,834tok   ✗  96.8s   466,976tok  dc=4 
+  Q044  Ama Barbara Biney                          ✗  44.2s   277,549tok   ✗  56.7s   383,355tok  dc=0 
+  Q045  Implicit Theories of Intelligence Predic   ✓  14.0s    32,256tok   ✗   9.3s    24,169tok  dc=0 ↓
+  Q046  Maxime Gonalons, 20th Century              ✗  84.9s   705,698tok   ✗  69.0s   446,771tok  dc=0 
+  Q047  Rudy Cox                                   ✓  16.5s    54,728tok   ✓  69.7s   534,872tok  dc=0 
+  Q048  Cozens Ranch Museum                        ✗  59.4s   471,650tok   ✗  26.5s    63,928tok  dc=1 
+  Q049  Whitesnake                                 ✗  18.3s    60,220tok   ✗  24.9s   111,619tok  dc=0 
+  Q050  Tina Tutkova                               ✗  55.8s   360,537tok   ✗ 859.0s   331,267tok  dc=2 
+  Q051  Sandie Hatch                               ✗  81.0s   551,222tok   ✓  16.1s    84,648tok  dc=0 ↑
+  Q052  19th century; Spain                        ✗  35.8s   192,748tok   ✓  80.5s   560,469tok  dc=0 ↑
+  Q053  Mathilda Bjarnehed                         ✗  54.6s   424,779tok   ✗  59.0s   480,353tok  dc=0 
+  Q054  Melissa Marr                               ✗  25.2s   113,426tok   ✗ 686.5s    82,565tok  dc=3 
+  Q055  Urza Acharya                               ✗  68.5s   614,728tok   ✗  49.1s   451,509tok  dc=0 

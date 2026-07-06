@@ -1,0 +1,32 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q1  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-06 13:38
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 1/1 (100.0%)
+Avg latency       : 30.1s
+Avg tokens in/out : 46772 / 2243
+Avg iterations    : 5.0
+Avg delegations   : 3.0
+Avg unique docs   : 15.0
+
+Retrieval Recall:
+  Gold recall     : 0.800
+  Evidence recall : 0.667
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : جامعة الملكة اروى
+       Gold      : Queen Arwa University
+       Iters=5  Deleg=3  Docs=15  Lat=30.1s  Tok=46772/2243
+       Gold recall=0.80  Evid recall=0.67

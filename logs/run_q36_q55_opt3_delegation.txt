@@ -1,0 +1,146 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q36–Q55  (20 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-06 14:18
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 6/20 (30.0%)
+Avg latency       : 117.4s
+Avg tokens in/out : 280239 / 3929
+Avg iterations    : 10.7
+Avg delegations   : 0.6
+Avg unique docs   : 72.8
+
+Retrieval Recall:
+  Gold recall     : 0.398
+  Evidence recall : 0.334
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q036] ✓  There is a divorced businessman and ex-circus worker who once lost their home an
+       Answer    : Professional Pests
+       Gold      : Professional Pests
+       Iters=2  Deleg=0  Docs=18  Lat=10.8s  Tok=14051/883
+       Gold recall=0.50  Evid recall=0.11
+
+[Q037] ✗  An artist fused two styles, one designed for mass appeal with another that's con
+       Answer    : Unknown
+       Gold      : Energetic; melodic; banging; clubby; bacon.
+       Iters=15  Deleg=0  Docs=188  Lat=48.3s  Tok=452091/3792
+       Gold recall=0.00  Evid recall=0.00
+
+[Q038] ✓  There is an author who studied and worked in both Nepal and USA. What is the nam
+       Answer    : Genetics Nepal Pvt. Ltd.
+       Gold      : Genetics Nepal Pvt. Ltd
+       Iters=9  Deleg=0  Docs=21  Lat=35.4s  Tok=194950/3955
+       Gold recall=0.50  Evid recall=0.50
+
+[Q039] ✗  An article was published and then updated 29 minutes later, sometime between 202
+       Answer    : Unknown
+       Gold      : 94%
+       Iters=15  Deleg=0  Docs=31  Lat=51.8s  Tok=422009/4584
+       Gold recall=1.00  Evid recall=0.33
+
+[Q040] ✗  Identify the year in which the artist, who meets all the following criteria, pas
+       Answer    : Unknown
+       Gold      : 2004
+       Iters=15  Deleg=2  Docs=129  Lat=64.2s  Tok=385788/4690
+       Gold recall=0.00  Evid recall=0.22
+
+[Q041] ✓  According to at least one source about a stuntman and at least one source about 
+       Answer    : Nejib Ben Azouz
+       Gold      :  Nejib Ben Azouz
+       Iters=3  Deleg=0  Docs=10  Lat=9.5s  Tok=25272/827
+       Gold recall=0.50  Evid recall=0.20
+
+[Q042] ✗  This individual was born between 1930 and 1940. They were known for works that f
+       Answer    : Sunset in Biafra: A Civil War Diary
+       Gold      : Sunset at Biafra
+       Iters=6  Deleg=0  Docs=49  Lat=24.5s  Tok=88111/2275
+       Gold recall=1.00  Evid recall=0.88
+
+[Q043] ✗  An individual was born between 1830 and 1840 (exclusive), had a farmer parent, c
+       Answer    : Samuel Langhorne Clemens
+       Gold      : Edwin Hughes Kendrick
+       Iters=15  Deleg=4  Docs=151  Lat=96.8s  Tok=466976/7058
+       Gold recall=0.00  Evid recall=0.00
+
+[Q044] ✗  This thesis was submitted in the early 21st century to a university founded in t
+       Answer    : Niyazi Kızılyürek
+       Gold      : Ama Barbara Biney
+       Iters=15  Deleg=0  Docs=73  Lat=56.7s  Tok=383355/5048
+       Gold recall=0.00  Evid recall=0.00
+
+[Q045] ✗  I recently read a research paper, but I can't remember its title. The title of t
+       Answer    : Theories of intelligence and achievement across the junior high school transition: A longitudinal st
+       Gold      : Implicit Theories of Intelligence Predict Achievement across an Adolescent Transition: A Longitudinal Study and an Intervention.
+       Iters=3  Deleg=0  Docs=10  Lat=9.3s  Tok=24169/567
+       Gold recall=0.00  Evid recall=0.17
+
+[Q046] ✗  In a certain international cup league match from a season prior to 2023, there w
+       Answer    : Unknown
+       Gold      : Maxime Gonalons, 20th Century
+       Iters=15  Deleg=0  Docs=130  Lat=69.0s  Tok=446771/7219
+       Gold recall=1.00  Evid recall=0.83
+
+[Q047] ✓  The information below is about an individual who - is an alumnus of a university
+       Answer    : Rudy Cox
+       Gold      : Rudy Cox
+       Iters=18  Deleg=0  Docs=115  Lat=69.7s  Tok=534872/6215
+       Gold recall=1.00  Evid recall=0.78
+
+[Q048] ✗  As of December 2022, I am looking for the name of a museum along a river that wa
+       Answer    : Maie Bartlett Heard; first child birth date not found; third child birth date not found
+       Gold      : Cozens Ranch Museum 
+       Iters=4  Deleg=1  Docs=40  Lat=26.5s  Tok=63928/2801
+       Gold recall=0.20  Evid recall=0.14
+
+[Q049] ✗  Before 2023, can you name the band formed between 1970 and 1990, by a musician w
+       Answer    : The Police
+       Gold      : Whitesnake
+       Iters=7  Deleg=0  Docs=41  Lat=24.9s  Tok=111619/2242
+       Gold recall=0.00  Evid recall=0.00
+
+[Q050] ✗  What's the full name of the person who played the role of a Nurse in a series th
+       Answer    : Unknown
+       Gold      : Tina Tutkova
+       Iters=15  Deleg=2  Docs=50  Lat=859.0s  Tok=331267/4664
+       Gold recall=0.50  Evid recall=0.50
+
+[Q051] ✓  An animated TV show first aired in 2000. Its final episode first aired in 2004. 
+       Answer    : Sandie Hatch
+       Gold      : Sandie Hatch
+       Iters=6  Deleg=0  Docs=17  Lat=16.1s  Tok=84648/1457
+       Gold recall=0.00  Evid recall=0.22
+
+[Q052] ✓  Two literary creations have the same author. One is a novel reviewed in a post o
+       Answer    : 19th century; Spain
+       Gold      : 19th century; Spain
+       Iters=15  Deleg=0  Docs=171  Lat=80.5s  Tok=560469/8709
+       Gold recall=0.50  Evid recall=0.60
+
+[Q053] ✗  A pack of downloadable content was released for a strategy video game over three
+       Answer    : Morten Jensen
+       Gold      : Mathilda Bjarnehed
+       Iters=15  Deleg=0  Docs=48  Lat=59.0s  Tok=480353/5464
+       Gold recall=1.00  Evid recall=0.86
+
+[Q054] ✗  As of December 31, 2023, name the author who was a university instructor, whose 
+       Answer    : Stephen King
+       Gold      : Melissa Marr
+       Iters=6  Deleg=3  Docs=58  Lat=686.5s  Tok=82565/1724
+       Gold recall=0.25  Evid recall=0.33
+
+[Q055] ✗  Based on the clues below, who wrote a movie review for a newspaper?  - The movie
+       Answer    : Unknown
+       Gold      : Urza Acharya
+       Iters=15  Deleg=0  Docs=106  Lat=49.1s  Tok=451509/4414
+       Gold recall=0.00  Evid recall=0.00

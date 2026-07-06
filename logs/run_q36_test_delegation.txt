@@ -1,0 +1,32 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q36–Q36  (1 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-06 13:35
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 0/1 (0.0%)
+Avg latency       : 32.8s
+Avg tokens in/out : 97755 / 3168
+Avg iterations    : 15.0
+Avg delegations   : 0.0
+Avg unique docs   : 0.0
+
+Retrieval Recall:
+  Gold recall     : 0.000
+  Evidence recall : 0.000
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q036] ✗  There is a divorced businessman and ex-circus worker who once lost their home an
+       Answer    : Unknown
+       Gold      : Professional Pests
+       Iters=15  Deleg=0  Docs=0  Lat=32.8s  Tok=97755/3168
+       Gold recall=0.00  Evid recall=0.00
