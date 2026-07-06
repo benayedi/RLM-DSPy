@@ -123,10 +123,6 @@ clue to a child agent so retrievals are independent and uncontaminated:
   print(clue_a, clue_b)
   # Then intersect or cross-verify in code
 
-**Cross-validate with ≥ 2 independent sources before committing.**
-The corpus has misleading near-matches. Require at least two independent clues to match
-before calling SUBMIT. If only one document confirms and others don't, keep searching.
-
 ════════════════════════════════════════════════════════════
 ORCHESTRATION PRINCIPLES
 ════════════════════════════════════════════════════════════

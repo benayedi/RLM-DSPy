@@ -158,6 +158,7 @@ def run_one(
     max_iterations: int = 25,
     max_depth: int = 5,
     verbose: bool = False,
+    default_top_k: int = 10,
 ) -> dict:
     question = get_question(row)
     gold = get_gold_answer(row)
@@ -173,6 +174,7 @@ def run_one(
             max_depth=max_depth,
             max_iterations=max_iterations,
             verbose=verbose,
+            default_top_k=default_top_k,
         )
     except Exception as e:
         import traceback
@@ -222,6 +224,8 @@ def run_eval(
     max_iterations: int = 25,
     max_depth: int = 5,
     verbose: bool = False,
+    default_top_k: int = 10,
+    args=None,
 ) -> None:
     from datasets import load_dataset
 
@@ -234,10 +238,14 @@ def run_eval(
     retriever = RemoteRetriever(server_url=os.environ["EMBEDDING_SERVER_URL"])
 
     results: list[dict] = []
-    rows = list(dataset)[start:end]
+    all_rows = list(dataset)
+    if hasattr(args, "indices") and args.indices:
+        index_list = [int(x.strip()) for x in args.indices.split(",")]
+        rows = [(idx, all_rows[idx]) for idx in index_list]
+    else:
+        rows = [(start + i, all_rows[start + i]) for i in range(end - start)]
 
-    for i, row in enumerate(rows):
-        q_idx = start + i
+    for i, (q_idx, row) in enumerate(rows):
         r = run_one(
             retriever=retriever,
             row=row,
@@ -245,6 +253,7 @@ def run_eval(
             max_iterations=max_iterations,
             max_depth=max_depth,
             verbose=verbose,
+            default_top_k=default_top_k,
         )
         results.append(r)
 
@@ -262,6 +271,11 @@ def run_eval(
     txt_path = f"{out_prefix}.txt"
     _write_txt(results, txt_path, start, end)
     print(f"TXT  saved → {txt_path}")
+
+    if "baseline" in out_prefix:
+        import subprocess
+        summary_script = Path(__file__).parent.parent / "scripts" / "update_baseline_summary.py"
+        subprocess.run([sys.executable, str(summary_script)], check=False)
 
 
 def _write_txt(results: list[dict], path: str, start: int, end: int) -> None:
@@ -326,10 +340,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="BrowseComp+ RAG RLM evaluation")
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--end", type=int, default=50)
+    parser.add_argument("--indices", type=str, default="",
+                        help="Comma-separated 0-based question indices to run (overrides --start/--end)")
     parser.add_argument("--out", default="logs/run", help="Output file prefix (no extension)")
     parser.add_argument("--max-iters", type=int, default=25)
     parser.add_argument("--max-depth", type=int, default=5)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--timeout", type=int, default=0,
+                        help="Per-question timeout in seconds (0 = no limit)")
+    parser.add_argument("--top-k", type=int, default=10,
+                        help="Default number of results returned by search_index (default: 10)")
     args = parser.parse_args()
 
     run_eval(
@@ -339,4 +359,6 @@ if __name__ == "__main__":
         max_iterations=args.max_iters,
         max_depth=args.max_depth,
         verbose=args.verbose,
+        default_top_k=args.top_k,
+        args=args,
     )
