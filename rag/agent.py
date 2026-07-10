@@ -40,7 +40,11 @@ class RunMetrics:
     output_tokens: int = 0
     iterations: int = 0
     delegation_calls: int = 0
+    search_calls: int = 0
+    get_document_calls: int = 0
     retrieved_doc_ids: list = field(default_factory=list)
+    _query_cache: dict = field(default_factory=dict)
+    _gold_ids: set = field(default_factory=set)
 
     @property
     def total_tokens(self) -> int:
@@ -61,6 +65,7 @@ class RunMetrics:
             f"RunMetrics(lat={self.latency_s:.1f}s, "
             f"tok={self.input_tokens}/{self.output_tokens}, "
             f"iters={self.iterations}, "
+            f"search={self.search_calls}, getdoc={self.get_document_calls}, "
             f"deleg={self.delegation_calls}, "
             f"docs={self.unique_docs_retrieved})"
         )
@@ -79,7 +84,7 @@ def build_lm() -> dspy.LM:
         api_key=api_key,
         api_version=api_version,
         temperature=1.0,
-        max_tokens=16000,
+        max_tokens=int(os.environ.get("AZURE_OPENAI_MAX_TOKENS", "16000")),
         cache=False,
     )
 
@@ -89,6 +94,7 @@ def build_rlm_agent(
     depth: int = 0,
     max_depth: int = 5,
     max_iterations: int = 25,
+    max_search_calls: int = 50,
     metrics: RunMetrics | None = None,
     verbose: bool = False,
     default_top_k: int = 10,
@@ -122,8 +128,31 @@ def build_rlm_agent(
         Search for specific named entities, titles, or proper nouns.
         Tip: scores below 0.30 are usually off-topic — try a different query.
         """
+        if metrics.search_calls >= max_search_calls:
+            print(f"    [search BLOCKED — limit {max_search_calls} reached] {query[:60]!r}")
+            return [{"score": 0.0, "doc_id": "LIMIT", "text": (
+                f"Search limit of {max_search_calls} calls reached. "
+                "Stop searching and provide your best answer based on what you already retrieved."
+            )}]
+
+        if query in metrics._query_cache:
+            print(f"    [search CACHED] {query[:60]!r}")
+            return metrics._query_cache[query]
+
+        t0 = time.perf_counter()
         results = retriever.search_index(query, top_k=top_k)
+        elapsed = time.perf_counter() - t0
         metrics.retrieved_doc_ids.extend(r["doc_id"] for r in results)
+        snippet_len = int(os.environ.get("SEARCH_SNIPPET_LEN", "500"))
+        for r in results:
+            if "text" in r and len(r["text"]) > snippet_len:
+                r["text"] = r["text"][:snippet_len] + "…"
+        metrics.search_calls += 1
+        metrics._query_cache[query] = results
+        doc_ids = [r["doc_id"] for r in results]
+        gold_hits = sum(1 for d in doc_ids if d in metrics._gold_ids)
+        hit_str = f"  ★{gold_hits}" if gold_hits else ""
+        print(f"    [search #{metrics.search_calls}] {query[:60]!r}  → {len(results)} docs{hit_str}  ({elapsed*1000:.0f}ms)")
         return results
 
     def get_document(doc_id: str) -> dict:
@@ -135,7 +164,12 @@ def build_rlm_agent(
             {doc_id: str, text: str}.
         Only call when the snippet is truncated at a relevant point.
         """
-        return retriever.get_document(doc_id)
+        t0 = time.perf_counter()
+        result = retriever.get_document(doc_id)
+        elapsed = time.perf_counter() - t0
+        metrics.get_document_calls += 1
+        print(f"    [getdoc #{metrics.get_document_calls}] {doc_id}  ({elapsed*1000:.0f}ms)")
+        return result
 
     tools = [search_index, get_document]
 
@@ -159,6 +193,7 @@ def build_rlm_agent(
                 depth=depth + 1,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
+                max_search_calls=max_search_calls,
                 metrics=metrics,
                 verbose=verbose,
             )
@@ -185,8 +220,10 @@ def run_question(
     question: str,
     max_depth: int = 5,
     max_iterations: int = 25,
+    max_search_calls: int = 50,
     verbose: bool = False,
     default_top_k: int = 10,
+    gold_ids: set | None = None,
 ) -> tuple[str, RunMetrics]:
     """
     Convenience wrapper: build a fresh agent, run one question, return (answer, metrics).
@@ -197,9 +234,12 @@ def run_question(
         retriever=retriever,
         max_depth=max_depth,
         max_iterations=max_iterations,
+        max_search_calls=max_search_calls,
         verbose=verbose,
         default_top_k=default_top_k,
     )
+    if gold_ids:
+        metrics._gold_ids = set(gold_ids)
 
     with track_usage() as tracker:
         t0 = time.time()

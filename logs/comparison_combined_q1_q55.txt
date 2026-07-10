@@ -1,0 +1,113 @@
+========================================================================================
+BrowseComp+ — COMBINED COMPARISON: Baseline vs. Opt3+Delegation (Q1–Q55)
+Generated: 2026-07-06 17:55
+(Q021 baseline re-run: replaced 2325.9s outlier with 79.7s)
+========================================================================================
+
+Configuration
+----------------------------------------
+  Baseline  : gpt-5.4-mini, FAISS Qwen3-Embed-8B, top_k=10, max_iters=25, no delegation
+  Delegation : same model/retriever + child signature, max_child_iters=6, delegate_batch()
+
+========================================================================================
+SUMMARY  (Q1–Q55, 55 questions)
+========================================================================================
+                             Baseline          Delegation
+  Accuracy           :       23/55 (41.8%)       23/55 (41.8%)
+  Median latency     :       27.6s             51.8s   ← typical question (robust to outliers)
+  Mean latency       :       37.2s             77.1s   ← skewed by Q050=859s, Q054=687s
+  Total wall time    :       34 min            71 min
+  Avg tokens in      :       237,265           255,873
+  Avg tokens out     :         4,031             3,806
+  Avg iterations     :       9.9               10.2
+  Total delegations  :       0                 27      ← 27/55 questions triggered delegation
+  Avg unique docs    :       0.0               65.8
+  Avg gold recall    :       0.534             0.468
+
+  Note on latency vs tokens: delegation ~2x slower (median 27.6s→51.8s) because each
+  child agent adds extra API round-trips, even though total tokens barely change.
+  28/55 questions had dc=0 (no delegation), diluting token averages.
+  Children have a 6-iter cap so they are cheap per call; the parent also exits earlier,
+  partially offsetting child token cost — hence similar tokens but higher wall time.
+
+  By range:
+    Q01–Q35 :  Baseline 17/35  Delegation 17/35
+    Q36–Q55 :  Baseline 6/20  Delegation 6/20
+
+  Gains  (+6): Q010, Q031, Q032, Q033, Q051, Q052
+  Losses (-6): Q009, Q019, Q025, Q029, Q040, Q045
+
+    GAIN Q010: 'Raheem Sterling'  (gold='Raheem Sterling')
+    GAIN Q031: 'Sadiq'  (gold='Sadiq')
+    GAIN Q032: 'Irving'  (gold='Irving')
+    GAIN Q033: 'Tweentrepreneurs'  (gold='Tweentrepreneurs')
+    GAIN Q051: 'Sandie Hatch'  (gold='Sandie Hatch')
+    GAIN Q052: '19th century; Spain'  (gold='19th century; Spain')
+    LOSS Q009: base='21'  deleg='Unknown'
+    LOSS Q019: base=''  deleg='Unknown'
+    LOSS Q025: base='Heaven'  deleg='Stop-Time'
+    LOSS Q029: base=''  deleg='Djaimilia Pereira de Almeida'
+    LOSS Q040: base='2004'  deleg='Unknown'
+    LOSS Q045: base=''  deleg='Theories of intelligence and achievement'
+
+========================================================================================
+PER-QUESTION RESULTS
+========================================================================================
+  Q      ✓/✗   Gold                                   Base lat/tok             Deleg lat/tok            dc    GR_b  GR_d   Δ
+  -------------------------------------------------------------------------------------------------------------------
+  Q001  ✓✓  Queen Arwa University                      13s    29,779       22s    43,213    0     1.00  1.00   
+  Q002  ✓✓  Laura Lojo-Rodriguez                       17s    48,199       33s    59,582    2     1.00  1.00   
+  Q003  ✓✓  Vakkorama                                  24s    98,191       35s    65,157    0     0.33  0.33   
+  Q004  ✗✗  Secretary                                  58s   425,030       91s   486,610    0     0.00  0.00   
+  Q005  ✗✗  Red                                        35s   188,952       15s    16,410    0     1.00  0.50   
+  Q006  ✗✗  Georgia Hirst                              69s   577,481       96s   396,890    0     0.00  0.17   
+  Q007  ✗✗  Boston                                     82s   319,207       96s   648,740    0     0.00  0.00   
+  Q008  ✗✗  The Dorset Culture of the Eastern Ar       70s   649,348      111s   626,446    0     0.00  0.00   
+  Q009  ✓✗  21                                         18s    55,992       86s   438,843    0     0.67  0.67  ↓
+  Q010  ✗✓  Raheem Sterling                            68s   561,254       47s   257,827    0     0.00  0.00  ↑
+  Q011  ✓✓  Electra                                    13s    37,751       20s    61,349    0     1.00  0.67   
+  Q012  ✓✓  Jacqueline Georgette Cantrelle             22s    92,580       84s   289,390    3     0.50  0.50   
+  Q013  ✗✗  Rona Weerasuriya                           49s   384,589       83s   482,455    0     0.00  0.50   
+  Q014  ✗✗  Kiran Shah                                 19s    83,307       52s   257,849    0     0.00  0.00   
+  Q015  ✗✗  Emmanuel Kwesi Danso Arthur Junior         50s   451,755      105s   409,139    3     0.00  0.00   
+  Q016  ✓✓  Taj-ul-Masajid                             20s    93,916       57s   177,809    2     1.00  1.00   
+  Q017  ✓✓  "Manos"                                    11s    30,669       42s   137,227    0     1.00  1.00   
+  Q018  ✗✗  Jadal                                      30s   130,882       75s   388,284    0     1.00  0.29   
+  Q019  ✓✗  Oral creatine supplementation: A pot       21s    72,079       99s   484,585    0     1.00  0.00  ↓
+  Q020  ✗✗  29/02                                      17s    66,574       80s   420,341    0     0.00  1.00   
+  Q021  ✗✗  1419                                       80s   687,505       97s   419,099    3     1.00  1.00   
+  Q022  ✗✗  Odeal                                      50s   438,693       58s   413,569    0     0.00  0.00   
+  Q023  ✓✓  Breadfast                                   9s    25,501        8s    14,244    0     1.00  0.50   
+  Q024  ✗✗  Lady Shri Ram College for Women            21s    97,882       44s   150,198    0     0.00  0.00   
+  Q025  ✓✗  Heaven                                     28s   183,994       60s   307,916    0     0.33  0.33  ↓
+  Q026  ✓✓  Lebo                                       18s    56,763       14s    38,106    0     1.00  1.00   
+  Q027  ✗✗  Monique Marguerite Alberte Vanwelsen       51s   423,062       12s    14,689    0     1.00  0.00   
+  Q028  ✓✓  Jaja of Opobo: The slave who became        12s    32,691       24s    66,525    0     1.00  1.00   
+  Q029  ✓✗  Ana Djaimilia dos Santos Pereira de        21s    77,890       35s    72,728    2     1.00  1.00  ↓
+  Q030  ✓✓  Mack, Sheffield                            16s    56,824       11s    28,450    0     1.00  1.00   
+  Q031  ✗✓  Sadiq                                      34s   166,518       13s    31,878    0     1.00  0.50  ↑
+  Q032  ✗✓  Irving                                     50s   372,927       73s   309,498    0     1.00  1.00  ↑
+  Q033  ✗✓  Tweentrepreneurs                           70s   477,613       53s   249,524    0     0.50  0.50  ↑
+  Q034  ✓✓  Holly Gauthier-Frankel                     32s    83,918       33s   125,065    0     1.00  0.83   
+  Q035  ✓✓  One Red Rose                               21s    66,597       29s    78,609    0     0.50  0.50   
+  Q036  ✓✓  Professional Pests                         17s    43,800       11s    14,051    0     1.00  0.50   
+  Q037  ✗✗  Energetic; melodic; banging; clubby;       58s   527,252       48s   452,091    0     0.00  0.00   
+  Q038  ✓✓  Genetics Nepal Pvt. Ltd                    26s    81,354       35s   194,950    0     0.50  0.50   
+  Q039  ✗✗  94%                                        72s   565,427       52s   422,009    0     0.00  1.00   
+  Q040  ✓✗  2004                                       20s    43,846       64s   385,788    2     0.75  0.00  ↓
+  Q041  ✓✓   Nejib Ben Azouz                           21s    63,153        9s    25,272    0     0.50  0.50   
+  Q042  ✗✗  Sunset at Biafra                           23s    72,468       24s    88,111    0     0.00  1.00   
+  Q043  ✗✗  Edwin Hughes Kendrick                      34s   146,834       97s   466,976    4     0.00  0.00   
+  Q044  ✗✗  Ama Barbara Biney                          44s   277,549       57s   383,355    0     0.50  0.00   
+  Q045  ✓✗  Implicit Theories of Intelligence Pr       14s    32,256        9s    24,169    0     0.00  0.00  ↓
+  Q046  ✗✗  Maxime Gonalons, 20th Century              85s   705,698       69s   446,771    0     1.00  1.00   
+  Q047  ✓✓  Rudy Cox                                   16s    54,728       70s   534,872    0     1.00  1.00   
+  Q048  ✗✗  Cozens Ranch Museum                        59s   471,650       27s    63,928    1     0.80  0.20   
+  Q049  ✗✗  Whitesnake                                 18s    60,220       25s   111,619    0     0.00  0.00   
+  Q050  ✗✗  Tina Tutkova                               56s   360,537      859s   331,267 *  2     0.50  0.50   
+  Q051  ✗✓  Sandie Hatch                               81s   551,222       16s    84,648    0     0.00  0.00  ↑
+  Q052  ✗✓  19th century; Spain                        36s   192,748       81s   560,469    0     0.25  0.50  ↑
+  Q053  ✗✗  Mathilda Bjarnehed                         55s   424,779       59s   480,353    0     1.00  1.00   
+  Q054  ✗✗  Melissa Marr                               25s   113,426      687s    82,565 *  3     0.25  0.25   
+  Q055  ✗✗  Urza Acharya                               68s   614,728       49s   451,509    0     0.50  0.00   
+  (* = outlier > 300s)

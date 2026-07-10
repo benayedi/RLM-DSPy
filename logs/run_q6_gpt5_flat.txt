@@ -1,0 +1,34 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q6–Q6  (1 questions)
+========================================================================
+
+Model         : ismail-gpt-5 (Azure)
+Date          : 2026-07-10 15:36
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 1/1 (100.0%)
+Avg latency       : 195.7s
+Avg tokens in/out : 27392 / 14590
+Avg iterations    : 4.0
+Avg search calls  : 4.0
+Avg getdoc calls  : 4.0
+Avg delegations   : 0.0
+Avg unique docs   : 25.0
+
+Retrieval Recall:
+  Gold recall     : 1.000
+  Evidence recall : 1.000
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q006] ✓  What is the real-life first and last name of the entertainer who;   First appear
+       Answer    : Georgia Hirst
+       Gold      : Georgia Hirst
+       Iters=4  Search=4  GetDoc=4  Deleg=0  Docs=25  Lat=195.7s  Tok=27392/14590
+       Gold recall=1.00  Evid recall=1.00

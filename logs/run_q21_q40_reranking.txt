@@ -1,0 +1,146 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q21–Q40  (20 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-09 16:32
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 10/20 (50.0%)
+Avg latency       : 100.8s
+Avg tokens in/out : 256028 / 3671
+Avg iterations    : 9.9
+Avg delegations   : 0.0
+Avg unique docs   : 72.0
+
+Retrieval Recall:
+  Gold recall     : 0.662
+  Evidence recall : 0.525
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q021] ✗  In a particular match of a snooker championship played before 2022, the followin
+       Answer    : Unknown
+       Gold      : 1419
+       Iters=15  Deleg=0  Docs=38  Lat=111.2s  Tok=594458/5742
+       Gold recall=1.00  Evid recall=1.00
+
+[Q022] ✗  There is a music artist from the same country as a footballer, who was a runner-
+       Answer    : Capo Plaza
+       Gold      : Odeal
+       Iters=13  Deleg=0  Docs=160  Lat=117.8s  Tok=435739/6702
+       Gold recall=0.50  Evid recall=0.40
+
+[Q023] ✓  The company was founded in April between 2015 and 2018. Prior to December 2023, 
+       Answer    : Breadfast
+       Gold      : Breadfast
+       Iters=3  Deleg=0  Docs=19  Lat=11.9s  Tok=19454/747
+       Gold recall=1.00  Evid recall=1.00
+
+[Q024] ✗  Which institute is currently located within 2 to 7 miles arial distance from the
+       Answer    : Indian Institute of Technology Kharagpur
+       Gold      : Lady Shri Ram College for Women
+       Iters=6  Deleg=0  Docs=28  Lat=28.0s  Tok=63497/1823
+       Gold recall=0.33  Evid recall=0.11
+
+[Q025] ✗  A writer: - was born before 1980 - grew up in poverty - had an absent father in 
+       Answer    : The Remains of the Day
+       Gold      : Heaven
+       Iters=15  Deleg=0  Docs=173  Lat=125.9s  Tok=448540/7623
+       Gold recall=0.67  Evid recall=0.40
+
+[Q026] ✓  An actress who studied musical theatre and graduated in 2002 was cast in a soap 
+       Answer    : Lebo
+       Gold      : Lebo
+       Iters=4  Deleg=0  Docs=20  Lat=15.2s  Tok=34929/780
+       Gold recall=1.00  Evid recall=0.78
+
+[Q027] ✗  I'm looking for the full birth name of a person who fits all of these details. T
+       Answer    : Unknown
+       Gold      : Monique Marguerite Alberte Vanwelsenaere
+       Iters=15  Deleg=0  Docs=112  Lat=828.6s  Tok=498181/6240
+       Gold recall=0.33  Evid recall=0.11
+
+[Q028] ✗  A slave in Africa and, later, a merchant who died en route to their destination,
+       Answer    : The Story of a Family House
+       Gold      : Jaja of Opobo: The slave who became a king
+       Iters=15  Deleg=0  Docs=35  Lat=73.1s  Tok=432140/4071
+       Gold recall=0.00  Evid recall=0.00
+
+[Q029] ✓  There’s a semi-autobiography whose plot centers around the protagonist’s body pa
+       Answer    : Ana Djaimilia dos Santos Pereira de Almeida Brito
+       Gold      : Ana Djaimilia dos Santos Pereira de Almeida Brito
+       Iters=5  Deleg=0  Docs=48  Lat=39.7s  Tok=53221/2834
+       Gold recall=1.00  Evid recall=0.78
+
+[Q030] ✓  A video game expansion was released in the 2000s that credited over 200 people f
+       Answer    : Mack, Sheffield
+       Gold      : Mack, Sheffield
+       Iters=18  Deleg=0  Docs=165  Lat=109.7s  Tok=515617/4631
+       Gold recall=1.00  Evid recall=0.50
+
+[Q031] ✗  Identify the first name of the person who explored the site where footprints of 
+       Answer    : Paul
+       Gold      : Sadiq
+       Iters=6  Deleg=0  Docs=39  Lat=43.5s  Tok=88712/2465
+       Gold recall=0.00  Evid recall=0.33
+
+[Q032] ✗  A student of architecture who was born in the 19th Century but died in the 20th 
+       Answer    : Penelope
+       Gold      : Irving
+       Iters=18  Deleg=0  Docs=69  Lat=93.8s  Tok=635149/5202
+       Gold recall=1.00  Evid recall=0.50
+
+[Q033] ✗  A co-authored article was published in 2021 discussing an animated TV series tha
+       Answer    : The DVD
+       Gold      : Tweentrepreneurs
+       Iters=14  Deleg=0  Docs=120  Lat=81.9s  Tok=323255/4514
+       Gold recall=0.00  Evid recall=0.00
+
+[Q034] ✓  Find the full name and surname of a North American individual who fulfills a set
+       Answer    : Holly Gauthier-Frankel
+       Gold      : Holly Gauthier-Frankel
+       Iters=10  Deleg=0  Docs=46  Lat=62.1s  Tok=217755/4125
+       Gold recall=0.67  Evid recall=0.67
+
+[Q035] ✓  I am looking for the title of a book first published in 1898 by an author born i
+       Answer    : One Red Rose
+       Gold      : One Red Rose
+       Iters=5  Deleg=0  Docs=24  Lat=20.8s  Tok=38752/1204
+       Gold recall=0.50  Evid recall=0.78
+
+[Q036] ✓  There is a divorced businessman and ex-circus worker who once lost their home an
+       Answer    : Professional Pests
+       Gold      : Professional Pests
+       Iters=4  Deleg=0  Docs=27  Lat=16.0s  Tok=30166/906
+       Gold recall=0.50  Evid recall=0.11
+
+[Q037] ✗  An artist fused two styles, one designed for mass appeal with another that's con
+       Answer    : rapid, aggressive, emotion-driven, humorous, authentic
+       Gold      : Energetic; melodic; banging; clubby; bacon.
+       Iters=16  Deleg=0  Docs=221  Lat=119.9s  Tok=485305/6919
+       Gold recall=1.00  Evid recall=0.40
+
+[Q038] ✓  There is an author who studied and worked in both Nepal and USA. What is the nam
+       Answer    : Genetics Nepal Pvt. Ltd.
+       Gold      : Genetics Nepal Pvt. Ltd
+       Iters=7  Deleg=0  Docs=45  Lat=66.0s  Tok=95313/3512
+       Gold recall=1.00  Evid recall=0.75
+
+[Q039] ✓  An article was published and then updated 29 minutes later, sometime between 202
+       Answer    : 94%
+       Gold      : 94%
+       Iters=5  Deleg=0  Docs=23  Lat=29.2s  Tok=58352/1843
+       Gold recall=1.00  Evid recall=1.00
+
+[Q040] ✓  Identify the year in which the artist, who meets all the following criteria, pas
+       Answer    : 2004
+       Gold      : 2004
+       Iters=5  Deleg=0  Docs=27  Lat=22.2s  Tok=52024/1539
+       Gold recall=0.75  Evid recall=0.89

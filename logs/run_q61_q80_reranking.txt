@@ -1,0 +1,146 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q61–Q80  (20 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-10 09:59
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 7/20 (35.0%)
+Avg latency       : 78.4s
+Avg tokens in/out : 275127 / 4049
+Avg iterations    : 10.4
+Avg delegations   : 0.0
+Avg unique docs   : 110.8
+
+Retrieval Recall:
+  Gold recall     : 0.408
+  Evidence recall : 0.393
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q061] ✗  Who was the artist who performed his last two shows in the U.S. as of 2022? He g
+       Answer    : Taraji P. Henson
+       Gold      : Dave Chappelle
+       Iters=8  Deleg=0  Docs=77  Lat=47.3s  Tok=134048/2883
+       Gold recall=0.00  Evid recall=0.00
+
+[Q062] ✓  Using clues, each pulled from one of at least two different sources (all publish
+       Answer    : Equipo de Arquitectura
+       Gold      : Equipo de Arquitectura
+       Iters=5  Deleg=0  Docs=20  Lat=33.5s  Tok=52100/1711
+       Gold recall=0.75  Evid recall=0.75
+
+[Q063] ✓  She holds an MBA and a Master’s degree, and as of 2023, she was a PhD candidate 
+       Answer    : Eno Ebele Jerry
+       Gold      : Eno Ebele Jerry 
+       Iters=4  Deleg=0  Docs=21  Lat=20.5s  Tok=30986/1438
+       Gold recall=0.80  Evid recall=0.89
+
+[Q064] ✗  A particular master’s thesis was centered around a band that formed just short o
+       Answer    : Unknown
+       Gold      : Lyric Geography
+       Iters=21  Deleg=0  Docs=206  Lat=301.2s  Tok=960956/9215
+       Gold recall=0.00  Evid recall=0.17
+
+[Q065] ✗  Could you provide me with the name of the person who:    - Completed their PhD i
+       Answer    : Hugo J. Woerdeman
+       Gold      : Vera Nünning 
+       Iters=12  Deleg=0  Docs=121  Lat=78.1s  Tok=225327/5263
+       Gold recall=0.00  Evid recall=0.10
+
+[Q066] ✓  What is the title of the first novel by the individual who:  - Published a monog
+       Answer    : Sealed
+       Gold      : Sealed
+       Iters=7  Deleg=0  Docs=80  Lat=38.7s  Tok=101180/2256
+       Gold recall=0.75  Evid recall=0.50
+
+[Q067] ✗  As of December 31, 2013, the following information is true about an individual: 
+       Answer    : Unknown
+       Gold      : kindergarten
+       Iters=15  Deleg=0  Docs=134  Lat=99.8s  Tok=386659/6114
+       Gold recall=0.00  Evid recall=0.12
+
+[Q068] ✗  This author was born in the 1950s and passed away between 2015 and 2022. This au
+       Answer    : Unknown
+       Gold      : Jim Hibbert.
+       Iters=16  Deleg=0  Docs=168  Lat=110.7s  Tok=464972/7240
+       Gold recall=0.00  Evid recall=0.33
+
+[Q069] ✗  In the 1970s, a TV show was aired in which a divorcee main character had two dau
+       Answer    : Howard Hesseman
+       Gold      : Edgar McLean Stevenson Jr.
+       Iters=8  Deleg=0  Docs=50  Lat=32.9s  Tok=119668/2300
+       Gold recall=0.00  Evid recall=0.00
+
+[Q070] ✗  Before 2020 but after 2015, a heritage site received a Blue Plaque status. When 
+       Answer    : D'Urban
+       Gold      : Motshekga
+       Iters=15  Deleg=0  Docs=197  Lat=96.5s  Tok=551898/5333
+       Gold recall=0.50  Evid recall=0.50
+
+[Q071] ✗  On the second Friday of a month after 2009 but before 2021, Person A published a
+       Answer    : Unknown
+       Gold      : 27
+       Iters=15  Deleg=0  Docs=226  Lat=115.2s  Tok=410574/5225
+       Gold recall=0.00  Evid recall=0.25
+
+[Q072] ✗  Two individuals from different industries share the same first name and surname,
+       Answer    : Allyson Felix
+       Gold      : Kevin Anderson
+       Iters=11  Deleg=0  Docs=249  Lat=114.3s  Tok=250886/5353
+       Gold recall=0.25  Evid recall=0.22
+
+[Q073] ✗  In the 2010s, an article was published on a platform that originated in the 1960
+       Answer    : 4
+       Gold      : 9
+       Iters=7  Deleg=0  Docs=20  Lat=47.6s  Tok=123123/3649
+       Gold recall=0.00  Evid recall=0.25
+
+[Q074] ✓  An article written in 2023 analyzes the allegorical theme in an animated movie o
+       Answer    : The Little Mermaid
+       Gold      : The Little Mermaid
+       Iters=7  Deleg=0  Docs=76  Lat=43.0s  Tok=92979/2306
+       Gold recall=0.50  Evid recall=0.67
+
+[Q075] ✓  The following details describe an individual:  A primary school dropout who was 
+       Answer    : Thomas Ngomba
+       Gold      : Thomas Ngomba
+       Iters=3  Deleg=0  Docs=8  Lat=13.4s  Tok=26196/906
+       Gold recall=1.00  Evid recall=0.40
+
+[Q076] ✓  What is the full name name of the author who, prior to December 2023, founded a 
+       Answer    : Ian Solomon
+       Gold      : Ian Solomon
+       Iters=12  Deleg=0  Docs=124  Lat=84.3s  Tok=285782/5173
+       Gold recall=0.75  Evid recall=0.75
+
+[Q077] ✓  Please help me identify the first and last name of the author of a specific book
+       Answer    : Manly P. Hall
+       Gold      : Manly Hall
+       Iters=4  Deleg=0  Docs=19  Lat=27.2s  Tok=27765/1502
+       Gold recall=0.86  Evid recall=0.67
+
+[Q078] ✗  A composer was credited for the soundtrack of a video game released in 2014, whi
+       Answer    : Unknown
+       Gold      : Fall of the Queen Bean
+       Iters=24  Deleg=0  Docs=270  Lat=167.2s  Tok=1078040/9298
+       Gold recall=1.00  Evid recall=0.62
+
+[Q079] ✗  What is the full title of the book written about an addictive substance made fro
+       Answer    : Opium: How an Ancient Flower Shaped and Poisoned Our World
+       Gold      : In the Arms of Morpheus: The Tragic History of Laudanum, Morphine and Patent Medicines
+       Iters=7  Deleg=0  Docs=115  Lat=77.3s  Tok=110075/2813
+       Gold recall=1.00  Evid recall=0.67
+
+[Q080] ✗  There is an author who as of 2023 was interested in gaming, had battled mental h
+       Answer    : Gabrielle Zevin
+       Gold      : J.K. Rowling
+       Iters=7  Deleg=0  Docs=34  Lat=19.7s  Tok=69330/1010
+       Gold recall=0.00  Evid recall=0.00

@@ -156,6 +156,7 @@ def run_one(
     row: dict,
     q_idx: int,
     max_iterations: int = 25,
+    max_search_calls: int = 50,
     max_depth: int = 5,
     verbose: bool = False,
     default_top_k: int = 10,
@@ -166,6 +167,8 @@ def run_one(
     evidence_ids = get_evidence_doc_ids(row)
 
     print(f"\n[Q{q_idx+1:03d}] {question[:100]}…")
+    if gold_ids:
+        print(f"  [gold docs: {list(gold_ids)[:3]}{'...' if len(gold_ids) > 3 else ''}]")
 
     try:
         predicted, metrics = run_question(
@@ -173,8 +176,10 @@ def run_one(
             question=question,
             max_depth=max_depth,
             max_iterations=max_iterations,
+            max_search_calls=max_search_calls,
             verbose=verbose,
             default_top_k=default_top_k,
+            gold_ids=gold_ids,
         )
     except Exception as e:
         import traceback
@@ -190,7 +195,8 @@ def run_one(
     symbol = "✓" if correct else "✗"
     print(
         f"  [{symbol}] Pred={predicted[:80]!r}  Gold={gold!r}\n"
-        f"      iters={metrics.iterations}  deleg={metrics.delegation_calls}"
+        f"      iters={metrics.iterations}  search={metrics.search_calls}"
+        f"  getdoc={metrics.get_document_calls}  deleg={metrics.delegation_calls}"
         f"  docs={metrics.unique_docs_retrieved}  lat={metrics.latency_s:.1f}s"
         f"  tok={metrics.input_tokens}/{metrics.output_tokens}"
         f"  gold_recall={gold_recall:.2f}  evid_recall={evid_recall:.2f}"
@@ -206,6 +212,8 @@ def run_one(
         "input_tokens": metrics.input_tokens,
         "output_tokens": metrics.output_tokens,
         "iterations": metrics.iterations,
+        "search_calls": metrics.search_calls,
+        "get_document_calls": metrics.get_document_calls,
         "delegation_calls": metrics.delegation_calls,
         "unique_docs": metrics.unique_docs_retrieved,
         "gold_recall": gold_recall,
@@ -222,6 +230,7 @@ def run_eval(
     end: int = 50,
     out_prefix: str = "logs/run",
     max_iterations: int = 25,
+    max_search_calls: int = 50,
     max_depth: int = 5,
     verbose: bool = False,
     default_top_k: int = 10,
@@ -251,6 +260,7 @@ def run_eval(
             row=row,
             q_idx=q_idx,
             max_iterations=max_iterations,
+            max_search_calls=max_search_calls,
             max_depth=max_depth,
             verbose=verbose,
             default_top_k=default_top_k,
@@ -303,6 +313,8 @@ def _write_txt(results: list[dict], path: str, start: int, end: int) -> None:
         f"Avg latency       : {avg('latency_s'):.1f}s",
         f"Avg tokens in/out : {avg('input_tokens'):.0f} / {avg('output_tokens'):.0f}",
         f"Avg iterations    : {avg('iterations'):.1f}",
+        f"Avg search calls  : {avg('search_calls'):.1f}",
+        f"Avg getdoc calls  : {avg('get_document_calls'):.1f}",
         f"Avg delegations   : {avg('delegation_calls'):.1f}",
         f"Avg unique docs   : {avg('unique_docs'):.1f}",
         "",
@@ -322,7 +334,8 @@ def _write_txt(results: list[dict], path: str, start: int, end: int) -> None:
             f"[Q{r['q_idx']+1:03d}] {sym}  {r['question'][:80]}",
             f"       Answer    : {r['predicted'][:100]}",
             f"       Gold      : {r['gold']}",
-            f"       Iters={r['iterations']}  Deleg={r['delegation_calls']}"
+            f"       Iters={r['iterations']}  Search={r['search_calls']}"
+            f"  GetDoc={r['get_document_calls']}  Deleg={r['delegation_calls']}"
             f"  Docs={r['unique_docs']}  Lat={r['latency_s']:.1f}s"
             f"  Tok={r['input_tokens']}/{r['output_tokens']}",
             f"       Gold recall={r['gold_recall']:.2f}  Evid recall={r['evid_recall']:.2f}",
@@ -344,6 +357,8 @@ if __name__ == "__main__":
                         help="Comma-separated 0-based question indices to run (overrides --start/--end)")
     parser.add_argument("--out", default="logs/run", help="Output file prefix (no extension)")
     parser.add_argument("--max-iters", type=int, default=25)
+    parser.add_argument("--max-search", type=int, default=50,
+                        help="Max search_index calls per question before forcing answer (default: 50)")
     parser.add_argument("--max-depth", type=int, default=5)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--timeout", type=int, default=0,
@@ -357,6 +372,7 @@ if __name__ == "__main__":
         end=args.end,
         out_prefix=args.out,
         max_iterations=args.max_iters,
+        max_search_calls=args.max_search,
         max_depth=args.max_depth,
         verbose=args.verbose,
         default_top_k=args.top_k,

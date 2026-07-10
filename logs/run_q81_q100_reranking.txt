@@ -1,0 +1,146 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q81–Q100  (20 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-10 10:24
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 9/20 (45.0%)
+Avg latency       : 60.3s
+Avg tokens in/out : 194537 / 3307
+Avg iterations    : 8.6
+Avg delegations   : 0.0
+Avg unique docs   : 67.6
+
+Retrieval Recall:
+  Gold recall     : 0.567
+  Evidence recall : 0.601
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q081] ✗  As of December 2023, can you name the historical European landmark unveiled in t
+       Answer    : Michigan Central Station
+       Gold      : 1798 Monument
+       Iters=15  Deleg=0  Docs=146  Lat=115.7s  Tok=400734/7149
+       Gold recall=0.00  Evid recall=0.29
+
+[Q082] ✓  A specific person who is the founder of a company whose online video games divis
+       Answer    : Stanford University
+       Gold      : Stanford University
+       Iters=4  Deleg=0  Docs=61  Lat=21.6s  Tok=30717/1297
+       Gold recall=1.00  Evid recall=0.83
+
+[Q083] ✓  I am looking for the full name of (Person A) who meets this information:-  - (Pe
+       Answer    : Russell David Lyons
+       Gold      : Russell David Lyons
+       Iters=5  Deleg=0  Docs=42  Lat=27.7s  Tok=47549/1835
+       Gold recall=1.00  Evid recall=1.00
+
+[Q084] ✗  There’s an American rapper and songwriter who was born in the 1990s and in Octob
+       Answer    : Unknown
+       Gold      : Mando
+       Iters=16  Deleg=0  Docs=66  Lat=113.3s  Tok=516663/8239
+       Gold recall=0.33  Evid recall=0.38
+
+[Q085] ✗  Can you identify the wrestler who eliminated a specific competitor from a 30-man
+       Answer    : Seth Rollins
+       Gold      : Chris Jericho
+       Iters=12  Deleg=0  Docs=57  Lat=55.0s  Tok=261974/3591
+       Gold recall=0.67  Evid recall=0.60
+
+[Q086] ✗  A volunteer group from a non-profit organization achieved a major feat when they
+       Answer    : a small village with a big history
+       Gold      : Little Lovely
+       Iters=4  Deleg=0  Docs=9  Lat=15.0s  Tok=19731/937
+       Gold recall=0.00  Evid recall=0.60
+
+[Q087] ✓  As of 2023 there is an individual who had previously held the same cabinet-level
+       Answer    : Osama Heikal
+       Gold      : Osama Heikal
+       Iters=5  Deleg=0  Docs=45  Lat=31.7s  Tok=56486/1989
+       Gold recall=1.00  Evid recall=1.00
+
+[Q088] ✓  Between 1990 and 2002 inclusive, this music group lost one of their parents. The
+       Answer    : June
+       Gold      : June
+       Iters=9  Deleg=0  Docs=85  Lat=56.9s  Tok=139876/3062
+       Gold recall=1.00  Evid recall=1.00
+
+[Q089] ✗  A magazine published an article in the twentieth century about an individual who
+       Answer    : Christopher Columbus
+       Gold      : Edward Winslow
+       Iters=14  Deleg=0  Docs=137  Lat=182.3s  Tok=339669/5408
+       Gold recall=0.50  Evid recall=0.67
+
+[Q090] ✗  I'm looking for a character that appears in a game made before the release of th
+       Answer    : Goro
+       Gold      : Tak
+       Iters=8  Deleg=0  Docs=48  Lat=52.8s  Tok=104895/2193
+       Gold recall=0.50  Evid recall=0.50
+
+[Q091] ✓  A man immigrated to the United States between 1890 and 1900 (exclusive). He retu
+       Answer    : Jun
+       Gold      : Jun
+       Iters=3  Deleg=0  Docs=5  Lat=8.8s  Tok=22017/490
+       Gold recall=0.17  Evid recall=0.17
+
+[Q092] ✓  This individual interviewed one of the greatest athletes in history between 1960
+       Answer    : Kwabena Yeboah
+       Gold      : Kwabena Yeboah
+       Iters=5  Deleg=0  Docs=19  Lat=16.0s  Tok=46013/1015
+       Gold recall=0.83  Evid recall=0.83
+
+[Q093] ✗  I'm looking for a historical figure. They had blue eyes and never drank alcohol.
+       Answer    : King Edward VIII
+       Gold      : Queen Marie of Romania
+       Iters=3  Deleg=0  Docs=25  Lat=20.2s  Tok=19126/949
+       Gold recall=0.33  Evid recall=0.33
+
+[Q094] ✓  A father wrote a letter to his son in the first four months of the year in the 1
+       Answer    : Chip Deffaa
+       Gold      : Chip Deffaa
+       Iters=5  Deleg=0  Docs=25  Lat=18.5s  Tok=50404/1105
+       Gold recall=0.33  Evid recall=0.38
+
+[Q095] ✗  On April 5, 2022, a post with the title phrased as a question and mentioning the
+       Answer    : Association of leisure-time physical activity with risk of 26 types of cancer in 1.44 million adults
+       Gold      : Psychedelics
+       Iters=13  Deleg=0  Docs=117  Lat=133.9s  Tok=466836/6239
+       Gold recall=0.00  Evid recall=0.00
+
+[Q096] ✗  Determine the name of the author based on the following clues: 1. The author wro
+       Answer    : Włodzimierz Opoka
+       Gold      : Jacek Rojowski
+       Iters=8  Deleg=0  Docs=91  Lat=62.8s  Tok=140613/3017
+       Gold recall=1.00  Evid recall=1.00
+
+[Q097] ✓  I'm looking for the name of a 19th-century magazine that had fewer than eight pu
+       Answer    : The Dial
+       Gold      : The Dial
+       Iters=5  Deleg=0  Docs=25  Lat=18.8s  Tok=48540/897
+       Gold recall=0.57  Evid recall=0.56
+
+[Q098] ✗  One of this writer’s works published between 1954 and 1957 won a competition. A 
+       Answer    : Unknown
+       Gold      : David Kermani
+       Iters=15  Deleg=0  Docs=182  Lat=96.3s  Tok=464682/5445
+       Gold recall=0.50  Evid recall=0.29
+
+[Q099] ✓  An article detailing the history of a theatre that opened in 1930 was published 
+       Answer    : Dead on Site
+       Gold      : Dead on Site
+       Iters=8  Deleg=0  Docs=76  Lat=43.1s  Tok=122408/2531
+       Gold recall=1.00  Evid recall=1.00
+
+[Q100] ✗  A particular cricket match played before 2022, in which the following events hap
+       Answer    : Unknown
+       Gold      : Pragyan Ojha
+       Iters=15  Deleg=0  Docs=91  Lat=115.0s  Tok=591799/8744
+       Gold recall=0.60  Evid recall=0.60

@@ -1,0 +1,146 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q20  (20 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-09 11:40
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 8/20 (40.0%)
+Avg latency       : 63.3s
+Avg tokens in/out : 357045 / 5020
+Avg iterations    : 12.4
+Avg delegations   : 0.0
+Avg unique docs   : 89.2
+
+Retrieval Recall:
+  Gold recall     : 0.520
+  Evidence recall : 0.496
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=5  Deleg=0  Docs=48  Lat=32.3s  Tok=72030/3186
+       Gold recall=1.00  Evid recall=0.83
+
+[Q002] ✓  Could you provide the name of the individual who:   - As of December 2023, the i
+       Answer    : Laura Lojo-Rodríguez
+       Gold      : Laura Lojo-Rodriguez
+       Iters=18  Deleg=0  Docs=161  Lat=100.2s  Tok=684433/9337
+       Gold recall=1.00  Evid recall=0.89
+
+[Q003] ✓  In the 1910s, an individual was born to a couple who lived in a wooden house in 
+       Answer    : Vakkorama
+       Gold      : Vakkorama
+       Iters=9  Deleg=0  Docs=52  Lat=46.5s  Tok=180787/4349
+       Gold recall=1.00  Evid recall=0.83
+
+[Q004] ✗  A township was established in the 1960s to accommodate migrant workers. Initiall
+       Answer    : Caretaker
+       Gold      : Secretary
+       Iters=15  Deleg=0  Docs=54  Lat=66.2s  Tok=412408/5223
+       Gold recall=0.00  Evid recall=0.60
+
+[Q005] ✓  A child was reported missing several times between January 1, 2014, and December
+       Answer    : red
+       Gold      : Red
+       Iters=3  Deleg=0  Docs=13  Lat=14.4s  Tok=24029/1495
+       Gold recall=1.00  Evid recall=1.00
+
+[Q006] ✗  What is the real-life first and last name of the entertainer who;   First appear
+       Answer    : Unknown
+       Gold      : Georgia Hirst
+       Iters=22  Deleg=0  Docs=109  Lat=105.1s  Tok=903160/8605
+       Gold recall=0.17  Evid recall=0.14
+
+[Q007] ✗  A book that was once a contender for an award, originally created in the 2000s (
+       Answer    : Mainpuri
+       Gold      : Boston
+       Iters=16  Deleg=0  Docs=57  Lat=79.6s  Tok=499284/6123
+       Gold recall=0.00  Evid recall=0.00
+
+[Q008] ✗  Someone born in 1886 was mistaken for a shaman during a trip taken between April
+       Answer    : Unknown
+       Gold      : The Dorset Culture of the Eastern Arctic
+       Iters=21  Deleg=0  Docs=134  Lat=85.5s  Tok=713873/6112
+       Gold recall=0.00  Evid recall=0.33
+
+[Q009] ✓  A CEO who founded a company in the mid-1990s was raised in Southern Africa. His 
+       Answer    : 21
+       Gold      : 21
+       Iters=6  Deleg=0  Docs=23  Lat=22.6s  Tok=72085/1788
+       Gold recall=0.67  Evid recall=0.75
+
+[Q010] ✗  The league football match occurred between 1992 and 2023 (inclusive).  The match
+       Answer    : Unknown
+       Gold      : Raheem Sterling
+       Iters=19  Deleg=0  Docs=153  Lat=114.5s  Tok=703134/10069
+       Gold recall=0.00  Evid recall=0.00
+
+[Q011] ✓  Sometime before 2020, an American director announced they would start a school i
+       Answer    : Electra
+       Gold      : Electra
+       Iters=3  Deleg=0  Docs=14  Lat=9.6s  Tok=13251/547
+       Gold recall=0.33  Evid recall=0.33
+
+[Q012] ✗  Give me this person's full birth name. - This person was born in the 1920s in Pa
+       Answer    : Unknown
+       Gold      : Jacqueline Georgette Cantrelle
+       Iters=14  Deleg=0  Docs=25  Lat=79.1s  Tok=419034/7478
+       Gold recall=1.00  Evid recall=0.40
+
+[Q013] ✗  There was a paper that included a quote from John Muir, dated 1901, and it was p
+       Answer    : Unknown
+       Gold      : Rona Weerasuriya
+       Iters=10  Deleg=0  Docs=103  Lat=39.7s  Tok=178652/2631
+       Gold recall=0.00  Evid recall=0.25
+
+[Q014] ✗  Provide the first name and last name of the person based on the following detail
+       Answer    : Irrfan Khan
+       Gold      : Kiran Shah
+       Iters=11  Deleg=0  Docs=93  Lat=52.2s  Tok=250327/3455
+       Gold recall=0.33  Evid recall=0.33
+
+[Q015] ✗  Give me the full birth name of the artiste based on the following hints :   1. T
+       Answer    : Unknown
+       Gold      : Emmanuel Kwesi Danso Arthur Junior 
+       Iters=15  Deleg=0  Docs=274  Lat=86.2s  Tok=453090/6460
+       Gold recall=0.00  Evid recall=0.22
+
+[Q016] ✗  I am looking for a mosque that meets the following criteria:  - It was completed
+       Answer    : Faisal Mosque
+       Gold      : Taj-ul-Masajid
+       Iters=13  Deleg=0  Docs=32  Lat=58.2s  Tok=327949/4301
+       Gold recall=0.75  Evid recall=0.71
+
+[Q017] ✓  An article about a writer born in July was posted on April 26, 2023. The article
+       Answer    : "Manos"
+       Gold      : "Manos"
+       Iters=5  Deleg=0  Docs=52  Lat=22.8s  Tok=46950/1922
+       Gold recall=1.00  Evid recall=0.50
+
+[Q018] ✗  The band was formed between 2001 and 2004 by a composer, music producer, guitari
+       Answer    : Unknown
+       Gold      : Jadal
+       Iters=14  Deleg=0  Docs=130  Lat=70.8s  Tok=375375/5377
+       Gold recall=0.14  Evid recall=0.12
+
+[Q019] ✓  A journal article was published between 2010 and 2016 (exclusive) that revolved 
+       Answer    : Oral creatine supplementation: A potential adjunct therapy for rheumatoid arthritis patients
+       Gold      : Oral creatine supplementation: A potential adjunct therapy for rheumatoid arthritis patients
+       Iters=15  Deleg=0  Docs=170  Lat=81.5s  Tok=345600/6212
+       Gold recall=1.00  Evid recall=1.00
+
+[Q020] ✗  By 2021, a couple welcomed their second child on the same day as their first. Th
+       Answer    : 17/06
+       Gold      : 29/02
+       Iters=15  Deleg=0  Docs=87  Lat=98.4s  Tok=465450/5733
+       Gold recall=1.00  Evid recall=0.67

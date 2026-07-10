@@ -1,0 +1,146 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q41–Q60  (20 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-10 09:05
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 10/20 (50.0%)
+Avg latency       : 68.0s
+Avg tokens in/out : 209402 / 3116
+Avg iterations    : 9.2
+Avg delegations   : 0.0
+Avg unique docs   : 81.2
+
+Retrieval Recall:
+  Gold recall     : 0.725
+  Evidence recall : 0.584
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q041] ✓  According to at least one source about a stuntman and at least one source about 
+       Answer    : Nejib Ben Azouz
+       Gold      :  Nejib Ben Azouz
+       Iters=3  Deleg=0  Docs=20  Lat=15.2s  Tok=25453/782
+       Gold recall=0.50  Evid recall=0.20
+
+[Q042] ✗  This individual was born between 1930 and 1940. They were known for works that f
+       Answer    : Sunset in Biafra
+       Gold      : Sunset at Biafra
+       Iters=4  Deleg=0  Docs=23  Lat=22.9s  Tok=36379/1421
+       Gold recall=1.00  Evid recall=0.75
+
+[Q043] ✗  An individual was born between 1830 and 1840 (exclusive), had a farmer parent, c
+       Answer    : Unknown
+       Gold      : Edwin Hughes Kendrick
+       Iters=15  Deleg=0  Docs=188  Lat=129.4s  Tok=355421/4909
+       Gold recall=0.00  Evid recall=0.00
+
+[Q044] ✗  This thesis was submitted in the early 21st century to a university founded in t
+       Answer    : Youngji Cho
+       Gold      : Ama Barbara Biney
+       Iters=12  Deleg=0  Docs=125  Lat=61.2s  Tok=326622/2852
+       Gold recall=0.50  Evid recall=0.38
+
+[Q045] ✓  I recently read a research paper, but I can't remember its title. The title of t
+       Answer    : Implicit Theories of Intelligence Predict Achievement Across an Adolescent Transition: A Longitudina
+       Gold      : Implicit Theories of Intelligence Predict Achievement across an Adolescent Transition: A Longitudinal Study and an Intervention.
+       Iters=7  Deleg=0  Docs=87  Lat=63.7s  Tok=120399/3556
+       Gold recall=1.00  Evid recall=1.00
+
+[Q046] ✗  In a certain international cup league match from a season prior to 2023, there w
+       Answer    : Joël Veltman, 20th century
+       Gold      : Maxime Gonalons, 20th Century
+       Iters=15  Deleg=0  Docs=151  Lat=111.1s  Tok=444989/6761
+       Gold recall=1.00  Evid recall=1.00
+
+[Q047] ✓  The information below is about an individual who - is an alumnus of a university
+       Answer    : Rudy Cox
+       Gold      : Rudy Cox
+       Iters=5  Deleg=0  Docs=43  Lat=27.0s  Tok=53376/1385
+       Gold recall=1.00  Evid recall=0.56
+
+[Q048] ✓  As of December 2022, I am looking for the name of a museum along a river that wa
+       Answer    : Cozens Ranch Museum
+       Gold      : Cozens Ranch Museum 
+       Iters=5  Deleg=0  Docs=105  Lat=25.6s  Tok=58897/1222
+       Gold recall=1.00  Evid recall=0.86
+
+[Q049] ✓  Before 2023, can you name the band formed between 1970 and 1990, by a musician w
+       Answer    : Whitesnake
+       Gold      : Whitesnake
+       Iters=7  Deleg=0  Docs=69  Lat=32.4s  Tok=78312/2682
+       Gold recall=0.83  Evid recall=0.71
+
+[Q050] ✓  What's the full name of the person who played the role of a Nurse in a series th
+       Answer    : Tina Tutkova
+       Gold      : Tina Tutkova
+       Iters=11  Deleg=0  Docs=99  Lat=42.5s  Tok=205964/2383
+       Gold recall=0.50  Evid recall=0.90
+
+[Q051] ✗  An animated TV show first aired in 2000. Its final episode first aired in 2004. 
+       Answer    : Unknown
+       Gold      : Sandie Hatch
+       Iters=15  Deleg=0  Docs=59  Lat=76.7s  Tok=523395/4763
+       Gold recall=1.00  Evid recall=0.22
+
+[Q052] ✗  Two literary creations have the same author. One is a novel reviewed in a post o
+       Answer    : 20th century;Spain
+       Gold      : 19th century; Spain
+       Iters=5  Deleg=0  Docs=41  Lat=22.4s  Tok=46392/1266
+       Gold recall=0.50  Evid recall=0.40
+
+[Q053] ✗  A pack of downloadable content was released for a strategy video game over three
+       Answer    : Unknown
+       Gold      : Mathilda Bjarnehed
+       Iters=15  Deleg=0  Docs=43  Lat=132.2s  Tok=368568/5027
+       Gold recall=1.00  Evid recall=0.71
+
+[Q054] ✓  As of December 31, 2023, name the author who was a university instructor, whose 
+       Answer    : Melissa Marr
+       Gold      : Melissa Marr
+       Iters=6  Deleg=0  Docs=12  Lat=23.1s  Tok=53889/1327
+       Gold recall=1.00  Evid recall=0.83
+
+[Q055] ✗  Based on the clues below, who wrote a movie review for a newspaper?  - The movie
+       Answer    : Unknown
+       Gold      : Urza Acharya
+       Iters=18  Deleg=0  Docs=182  Lat=116.0s  Tok=750951/6821
+       Gold recall=0.50  Evid recall=0.40
+
+[Q056] ✗  Can you name the video game based on the following details, as of December 2023:
+       Answer    : Road Runner's Death Valley Rally
+       Gold      : Sleepwalker
+       Iters=7  Deleg=0  Docs=24  Lat=28.1s  Tok=69464/2094
+       Gold recall=0.50  Evid recall=0.67
+
+[Q057] ✗  There is an area in the midwestern region of a country in North America where an
+       Answer    : Unknown
+       Gold      : Greek of the Week
+       Iters=15  Deleg=0  Docs=213  Lat=166.3s  Tok=382175/6264
+       Gold recall=0.00  Evid recall=0.12
+
+[Q058] ✓  In a capital city in the South American continent, there's a building rumored to
+       Answer    : La Estrella, Argentina
+       Gold      : La Estrella; Argentina
+       Iters=6  Deleg=0  Docs=58  Lat=34.7s  Tok=75884/2162
+       Gold recall=0.67  Evid recall=0.60
+
+[Q059] ✓  As of December 2022, I am looking for the name of the thesis advisor for a thesi
+       Answer    : Richard C. Larson
+       Gold      : Richard C. Larson
+       Iters=8  Deleg=0  Docs=58  Lat=197.0s  Tok=136420/2691
+       Gold recall=1.00  Evid recall=0.50
+
+[Q060] ✓  In February 2017, an article was published about an animal that suffered injury 
+       Answer    : 37 kg
+       Gold      : 37kg
+       Iters=6  Deleg=0  Docs=23  Lat=32.7s  Tok=75094/1959
+       Gold recall=1.00  Evid recall=0.88

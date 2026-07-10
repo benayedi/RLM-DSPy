@@ -1,0 +1,86 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q1–Q10  (10 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-09 12:33
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 4/10 (40.0%)
+Avg latency       : 45.4s
+Avg tokens in/out : 223716 / 3560
+Avg iterations    : 9.4
+Avg delegations   : 0.0
+Avg unique docs   : 55.4
+
+Retrieval Recall:
+  Gold recall     : 0.542
+  Evidence recall : 0.510
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q001] ✓  Please tell me the name of the learning institution that fits the following crit
+       Answer    : Queen Arwa University
+       Gold      : Queen Arwa University
+       Iters=4  Deleg=0  Docs=30  Lat=18.2s  Tok=30500/1168
+       Gold recall=1.00  Evid recall=0.83
+
+[Q002] ✓  Could you provide the name of the individual who:   - As of December 2023, the i
+       Answer    : Laura Lojo-Rodríguez
+       Gold      : Laura Lojo-Rodriguez
+       Iters=6  Deleg=0  Docs=28  Lat=25.0s  Tok=82887/1810
+       Gold recall=0.75  Evid recall=0.67
+
+[Q003] ✓  In the 1910s, an individual was born to a couple who lived in a wooden house in 
+       Answer    : Vakkorama
+       Gold      : Vakkorama
+       Iters=7  Deleg=0  Docs=24  Lat=25.8s  Tok=83887/1686
+       Gold recall=1.00  Evid recall=0.67
+
+[Q004] ✗  A township was established in the 1960s to accommodate migrant workers. Initiall
+       Answer    : groundsman
+       Gold      : Secretary
+       Iters=15  Deleg=0  Docs=29  Lat=63.1s  Tok=496655/4470
+       Gold recall=0.00  Evid recall=0.60
+
+[Q005] ✗  A child was reported missing several times between January 1, 2014, and December
+       Answer    : white t-shirt
+       Gold      : Red
+       Iters=8  Deleg=0  Docs=27  Lat=40.4s  Tok=134308/2696
+       Gold recall=1.00  Evid recall=1.00
+
+[Q006] ✗  What is the real-life first and last name of the entertainer who;   First appear
+       Answer    : Unknown
+       Gold      : Georgia Hirst
+       Iters=17  Deleg=0  Docs=114  Lat=104.8s  Tok=593073/10158
+       Gold recall=0.00  Evid recall=0.00
+
+[Q007] ✗  A book that was once a contender for an award, originally created in the 2000s (
+       Answer    : Sulechów
+       Gold      : Boston
+       Iters=7  Deleg=0  Docs=36  Lat=32.7s  Tok=97861/2838
+       Gold recall=0.00  Evid recall=0.00
+
+[Q008] ✗  Someone born in 1886 was mistaken for a shaman during a trip taken between April
+       Answer    : Unknown
+       Gold      : The Dorset Culture of the Eastern Arctic
+       Iters=13  Deleg=0  Docs=169  Lat=66.1s  Tok=348852/4459
+       Gold recall=1.00  Evid recall=0.83
+
+[Q009] ✓  A CEO who founded a company in the mid-1990s was raised in Southern Africa. His 
+       Answer    : 21
+       Gold      : 21
+       Iters=4  Deleg=0  Docs=15  Lat=14.7s  Tok=29187/891
+       Gold recall=0.67  Evid recall=0.50
+
+[Q010] ✗  The league football match occurred between 1992 and 2023 (inclusive).  The match
+       Answer    : Unknown
+       Gold      : Raheem Sterling
+       Iters=13  Deleg=0  Docs=82  Lat=63.3s  Tok=339945/5421
+       Gold recall=0.00  Evid recall=0.00

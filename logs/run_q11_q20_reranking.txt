@@ -1,0 +1,86 @@
+========================================================================
+BrowseComp+ Evaluation — RAG RLM (dspy.RLM + FAISS + Delegation)
+Q11–Q20  (10 questions)
+========================================================================
+
+Model         : gpt-5.4-mini (Azure)
+Date          : 2026-07-09 15:50
+Max iters     : 25   Max depth: 5
+
+────────────────────────────────────────────────────────────────────────
+SUMMARY
+────────────────────────────────────────────────────────────────────────
+Accuracy          : 4/10 (40.0%)
+Avg latency       : 76.0s
+Avg tokens in/out : 242077 / 4181
+Avg iterations    : 9.9
+Avg delegations   : 0.0
+Avg unique docs   : 84.9
+
+Retrieval Recall:
+  Gold recall     : 0.667
+  Evidence recall : 0.685
+
+────────────────────────────────────────────────────────────────────────
+PER-QUESTION RESULTS
+────────────────────────────────────────────────────────────────────────
+
+[Q011] ✓  Sometime before 2020, an American director announced they would start a school i
+       Answer    : Electra
+       Gold      : Electra
+       Iters=5  Deleg=0  Docs=25  Lat=27.6s  Tok=44866/1079
+       Gold recall=0.67  Evid recall=0.67
+
+[Q012] ✗  Give me this person's full birth name. - This person was born in the 1920s in Pa
+       Answer    : Unknown
+       Gold      : Jacqueline Georgette Cantrelle
+       Iters=15  Deleg=0  Docs=45  Lat=95.1s  Tok=425012/5750
+       Gold recall=0.50  Evid recall=0.60
+
+[Q013] ✓  There was a paper that included a quote from John Muir, dated 1901, and it was p
+       Answer    : Rona Weerasuriya
+       Gold      : Rona Weerasuriya
+       Iters=15  Deleg=0  Docs=196  Lat=141.8s  Tok=437310/6468
+       Gold recall=0.50  Evid recall=0.75
+
+[Q014] ✗  Provide the first name and last name of the person based on the following detail
+       Answer    : Unknown
+       Gold      : Kiran Shah
+       Iters=17  Deleg=0  Docs=181  Lat=137.7s  Tok=521041/6755
+       Gold recall=0.00  Evid recall=0.00
+
+[Q015] ✗  Give me the full birth name of the artiste based on the following hints :   1. T
+       Answer    : Teniola Apata
+       Gold      : Emmanuel Kwesi Danso Arthur Junior 
+       Iters=8  Deleg=0  Docs=168  Lat=76.8s  Tok=112842/5154
+       Gold recall=0.00  Evid recall=0.33
+
+[Q016] ✗  I am looking for a mosque that meets the following criteria:  - It was completed
+       Answer    : Unknown
+       Gold      : Taj-ul-Masajid
+       Iters=14  Deleg=0  Docs=43  Lat=72.2s  Tok=361713/4658
+       Gold recall=1.00  Evid recall=1.00
+
+[Q017] ✓  An article about a writer born in July was posted on April 26, 2023. The article
+       Answer    : "Manos"
+       Gold      : "Manos"
+       Iters=3  Deleg=0  Docs=10  Lat=15.4s  Tok=24288/1083
+       Gold recall=1.00  Evid recall=0.50
+
+[Q018] ✗  The band was formed between 2001 and 2004 by a composer, music producer, guitari
+       Answer    : JadaL
+       Gold      : Jadal
+       Iters=4  Deleg=0  Docs=15  Lat=17.7s  Tok=26503/1233
+       Gold recall=1.00  Evid recall=1.00
+
+[Q019] ✓  A journal article was published between 2010 and 2016 (exclusive) that revolved 
+       Answer    : Oral creatine supplementation: A potential adjunct therapy for rheumatoid arthritis patients
+       Gold      : Oral creatine supplementation: A potential adjunct therapy for rheumatoid arthritis patients
+       Iters=6  Deleg=0  Docs=38  Lat=68.7s  Tok=77728/2462
+       Gold recall=1.00  Evid recall=1.00
+
+[Q020] ✗  By 2021, a couple welcomed their second child on the same day as their first. Th
+       Answer    : 18/12
+       Gold      : 29/02
+       Iters=12  Deleg=0  Docs=128  Lat=107.5s  Tok=389464/7164
+       Gold recall=1.00  Evid recall=1.00
