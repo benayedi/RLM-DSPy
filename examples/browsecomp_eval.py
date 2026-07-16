@@ -13,11 +13,14 @@ import hashlib
 import json
 import os
 import re
+import signal
 import sys
 import time
 import unicodedata
 from datetime import datetime
 from pathlib import Path
+
+import requests as _requests
 
 import dspy
 from dotenv import load_dotenv
@@ -124,6 +127,9 @@ def heuristic_match(gold: str, response: str) -> bool:
 
 
 def judge_match(question: str, response: str, gold: str) -> bool:
+    if heuristic_match(gold, response):
+        return True
+
     from openai import AzureOpenAI
 
     client = AzureOpenAI(
@@ -134,7 +140,7 @@ def judge_match(question: str, response: str, gold: str) -> bool:
     prompt = _JUDGE_PROMPT.format(question=question, response=response, correct_answer=gold)
     try:
         resp = client.chat.completions.create(
-            model=os.environ.get("AZURE_OPENAI_MODEL", "gpt-5.4-mini"),
+            model=os.environ.get("AZURE_OPENAI_JUDGE_MODEL", os.environ.get("AZURE_OPENAI_MODEL", "gpt-5.4-mini")),
             messages=[{"role": "user", "content": prompt}],
             temperature=1,
             max_completion_tokens=512,
@@ -160,6 +166,7 @@ def run_one(
     max_depth: int = 5,
     verbose: bool = False,
     default_top_k: int = 10,
+    timeout: int = 0,
 ) -> dict:
     question = get_question(row)
     gold = get_gold_answer(row)
@@ -169,6 +176,12 @@ def run_one(
     print(f"\n[Q{q_idx+1:03d}] {question[:100]}…")
     if gold_ids:
         print(f"  [gold docs: {list(gold_ids)[:3]}{'...' if len(gold_ids) > 3 else ''}]")
+
+    if timeout > 0:
+        def _timeout_handler(signum, frame):
+            raise TimeoutError(f"question timed out after {timeout}s")
+        old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+        signal.alarm(timeout)
 
     try:
         predicted, metrics = run_question(
@@ -181,12 +194,20 @@ def run_one(
             default_top_k=default_top_k,
             gold_ids=gold_ids,
         )
+    except TimeoutError as e:
+        print(f"  [TIMEOUT] {e}")
+        metrics = RunMetrics(latency_s=float(timeout))
+        predicted = "TIMEOUT"
     except Exception as e:
         import traceback
         traceback.print_exc()
         print(f"  ERROR: {e}")
         metrics = RunMetrics(latency_s=0.0)
         predicted = "ERROR"
+    finally:
+        if timeout > 0:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
 
     correct = judge_match(question, predicted, gold)
     gold_recall = metrics.gold_recall(list(gold_ids))
@@ -198,6 +219,7 @@ def run_one(
         f"      iters={metrics.iterations}  search={metrics.search_calls}"
         f"  getdoc={metrics.get_document_calls}  deleg={metrics.delegation_calls}"
         f"  docs={metrics.unique_docs_retrieved}  lat={metrics.latency_s:.1f}s"
+        f"  retr={metrics.retrieval_latency_s:.1f}s"
         f"  tok={metrics.input_tokens}/{metrics.output_tokens}"
         f"  gold_recall={gold_recall:.2f}  evid_recall={evid_recall:.2f}"
     )
@@ -209,6 +231,7 @@ def run_one(
         "predicted": predicted,
         "correct": correct,
         "latency_s": metrics.latency_s,
+        "retrieval_latency_s": metrics.retrieval_latency_s,
         "input_tokens": metrics.input_tokens,
         "output_tokens": metrics.output_tokens,
         "iterations": metrics.iterations,
@@ -255,6 +278,14 @@ def run_eval(
         rows = [(start + i, all_rows[start + i]) for i in range(end - start)]
 
     for i, (q_idx, row) in enumerate(rows):
+        # Abort immediately if the embedding server is unreachable.
+        server_url = os.environ["EMBEDDING_SERVER_URL"].rstrip("/")
+        try:
+            _requests.get(f"{server_url}/health", timeout=5).raise_for_status()
+        except Exception as e:
+            print(f"\n[ABORT] Embedding server unreachable before Q{q_idx+1}: {e}")
+            sys.exit(1)
+
         r = run_one(
             retriever=retriever,
             row=row,
@@ -264,6 +295,7 @@ def run_eval(
             max_depth=max_depth,
             verbose=verbose,
             default_top_k=default_top_k,
+            timeout=args.timeout if hasattr(args, "timeout") else 0,
         )
         results.append(r)
 
@@ -311,6 +343,7 @@ def _write_txt(results: list[dict], path: str, start: int, end: int) -> None:
         "─" * 72,
         f"Accuracy          : {n_correct}/{n} ({100*n_correct/n:.1f}%)",
         f"Avg latency       : {avg('latency_s'):.1f}s",
+        f"Avg retrieval lat : {avg('retrieval_latency_s'):.1f}s",
         f"Avg tokens in/out : {avg('input_tokens'):.0f} / {avg('output_tokens'):.0f}",
         f"Avg iterations    : {avg('iterations'):.1f}",
         f"Avg search calls  : {avg('search_calls'):.1f}",
@@ -337,6 +370,7 @@ def _write_txt(results: list[dict], path: str, start: int, end: int) -> None:
             f"       Iters={r['iterations']}  Search={r['search_calls']}"
             f"  GetDoc={r['get_document_calls']}  Deleg={r['delegation_calls']}"
             f"  Docs={r['unique_docs']}  Lat={r['latency_s']:.1f}s"
+            f"  Retr={r.get('retrieval_latency_s', 0):.1f}s"
             f"  Tok={r['input_tokens']}/{r['output_tokens']}",
             f"       Gold recall={r['gold_recall']:.2f}  Evid recall={r['evid_recall']:.2f}",
         ]
@@ -356,13 +390,14 @@ if __name__ == "__main__":
     parser.add_argument("--indices", type=str, default="",
                         help="Comma-separated 0-based question indices to run (overrides --start/--end)")
     parser.add_argument("--out", default="logs/run", help="Output file prefix (no extension)")
-    parser.add_argument("--max-iters", type=int, default=25)
-    parser.add_argument("--max-search", type=int, default=50,
-                        help="Max search_index calls per question before forcing answer (default: 50)")
+    parser.add_argument("--max-iters", type=int, default=16)
+    parser.add_argument("--max-search", type=int, default=35,
+                        help="Max search_index calls per question before forcing answer (default: 35)")
     parser.add_argument("--max-depth", type=int, default=5)
     parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--timeout", type=int, default=0,
-                        help="Per-question timeout in seconds (0 = no limit)")
+    parser.add_argument("--timeout", type=int,
+                        default=int(os.environ.get("BROWSECOMP_TIMEOUT", 0)),
+                        help="Per-question timeout in seconds (0 = no limit, default from BROWSECOMP_TIMEOUT env)")
     parser.add_argument("--top-k", type=int, default=10,
                         help="Default number of results returned by search_index (default: 10)")
     args = parser.parse_args()

@@ -1,0 +1,969 @@
+================================================================================
+BrowseComp+ Evaluation — GPT-5 + FAISS IVFSQ8
+Q1–Q830  (830 questions) 
+================================================================================
+
+Configuration
+----------------------------------------
+  Model          : gpt-5 / ismail-gpt-5 (Azure OpenAI, reasoning_effort=low)
+  Embeddings     : Qwen3-Embed-8B (4096-dim)
+  Retriever      : FAISS IVFScalarQuantizer (IVFSQ8, nprobe=64, 428MB, GPU)
+  Judge          : gpt-5.4-mini (official BrowseComp+ grader prompt)
+  Max iterations : 16  (soft commit after turn 12)
+  Max searches   : 35
+  Default top_k  : 10
+  Timeout        : 600s per question
+
+================================================================================
+OVERALL SUMMARY (Q1–Q830 — COMPLETE)
+================================================================================
+  Accuracy            : 573/830 (69.0%)
+    Q1–Q600           : 423/600 (70.5%)
+    Q601–Q700         : 58/100  (58.0%)
+    Q701–Q800         : 69/100  (69.0%)
+    Q801–Q830         : 23/30   (76.7%)
+
+  Total runtime       : 239,794s (66.6 hours)
+  Total search calls  : 9,295
+
+  Avg latency         : 288.9s  (incl. outliers)
+  Avg latency (excl. >600s outliers, n=771): 125.8s
+  Avg tokens in       : 100,118
+  Avg tokens out      : 9,911
+  Avg search calls    : 11.2
+  Avg iterations      : 8.7
+  Avg gold recall     : 0.724
+  Avg evid recall     : 0.608
+
+Outliers (>600s) Q1–Q830: 59
+  Q524 ✗  23739s  search=16  tok_in=178,404
+  Q216 ✗   6530s  search=21  tok_in=163,198
+  Q168 ✓   6197s  search=13  tok_in=196,210
+  Q502 ✓   5456s  search=18  tok_in=128,131
+  Q593 ✗   3865s  search=24  tok_in=144,146
+  Q413 ✓   3130s  search=5   tok_in=36,897
+  Q068 ✗   2834s  search=32  tok_in=317,743
+  Q540 ✗   2678s  search=19  tok_in=84,677
+  Q495 ✓   2672s  search=15  tok_in=103,639
+  Q437 ✗   2501s  search=13  tok_in=213,727
+  Q443 ✗   2344s  search=23  tok_in=261,093
+  Q111 ✗   2344s  search=35  tok_in=161,818
+  Q419 ✓   2155s  search=9   tok_in=115,554
+  Q382 ✗   2027s  search=12  tok_in=132,385
+  Q563 ✓   1985s  search=7   tok_in=53,045
+  Q296 ✓   1778s  search=4   tok_in=38,608
+  Q497 ✓   1722s  search=3   tok_in=35,557
+  Q192 ✓   1691s  search=8   tok_in=64,580
+  Q378 ✓   1603s  search=2   tok_in=36,701
+  Q275 ✓   1585s  search=2   tok_in=20,438
+  Q247 ✓   1575s  search=5   tok_in=44,528
+  Q310 ✗   1538s  search=15  tok_in=224,203
+  Q167 ✓   1532s  search=11  tok_in=131,216
+  Q584 ✓   1464s  search=15  tok_in=59,629
+  Q471 ✗   1494s  search=16  tok_in=135,350
+  Q129 ✓   1297s  search=13  tok_in=150,071
+  Q396 ✓   1296s  search=3   tok_in=43,016
+  Q315 ✓   1210s  search=7   tok_in=52,216
+  Q373 ✗   1186s  search=31  tok_in=270,084
+  Q037 ✗   1142s  search=35  tok_in=266,376
+  Q418 ✓   1068s  search=5   tok_in=75,505
+  Q151 ✗   1014s  search=16  tok_in=207,211
+  Q431 ✓    998s  search=7   tok_in=101,440
+  Q599 ✓    954s  search=24  tok_in=99,359
+  Q098 ✗    906s  search=35  tok_in=213,907
+  Q364 ✓    883s  search=8   tok_in=122,545
+  Q415 ✗    865s  search=30  tok_in=286,503
+  Q149 ✓    841s  search=8   tok_in=95,365
+  Q559 ✗    767s  search=35  tok_in=146,567
+  Q520 ✗    749s  search=22  tok_in=240,870
+  Q466 ✗    733s  search=22  tok_in=241,300
+  Q056 ✓    725s  search=5   tok_in=57,143
+  Q007 ✗    683s  search=35  tok_in=130,552
+  Q207 ✗    776s  search=17  tok_in=146,959
+  Q394 ✓    775s  search=2   tok_in=42,169
+  Q330 ✓    608s  search=29  tok_in=238,541
+  Q708 ✓   8335s  search=4   tok_in=54,180
+  Q686 ✓   8302s  search=4   tok_in=25,913
+  Q807 ✓   4586s  search=10  tok_in=132,549
+  Q768 ✓   2684s  search=3   tok_in=49,446
+  Q651 ✗   2577s  search=13  tok_in=239,600
+  Q796 ✗   2171s  search=17  tok_in=210,900
+  Q738 ✓   1646s  search=10  tok_in=74,252
+  Q626 ✓   1595s  search=5   tok_in=171,355
+  Q792 ✗   1459s  search=18  tok_in=197,746
+  Q608 ✓   1230s  search=5   tok_in=62,869
+  Q766 ✓    848s  search=19  tok_in=189,196
+  Q751 ✗    741s  search=19  tok_in=199,895
+  Q742 ✗    682s  search=3   tok_in=87,350
+
+Failure breakdown Q1–Q830 (257 wrong):
+  Reasoning failure (gold found, wrong answer) : 60
+  Retrieval failure (gold never found)         : 64
+  Mixed (found gold but wrong + hit cap)       : 34
+  Search exhaustion (hit 35-cap, no gold)      : 28
+  Runaway / loop (>600s)                       : 17
+  Near-miss / order error                      : 6
+
+================================================================================
+REASONING EFFORT COMPARISON (Q001, Q003, Q006, Q009, Q010 — 2026-07-16)
+================================================================================
+  All 3 settings got 5/5 correct on these normal questions (all passed with low).
+  Failing questions test (reasoning_effort=high, 4/20 done before abort):
+    3/4 correct — questions that failed with low due to reasoning errors.
+
+  Latency comparison (seconds):
+  Q      Low      Medium   High
+  --------------------------------------------------------
+  Q001   47.9s    105.9s   306.8s
+  Q003   14.7s     50.4s   81.9s
+  Q006   62.3s    113.4s   286.6s
+  Q009   18.0s     56.0s   90.3s
+  Q010   25.3s    103.9s   161.7s
+  Avg    33.6s     85.9s   185.5s
+
+  Token comparison (tok_in / tok_out):
+  Q      Low tok_in  Med tok_in  Med tok_out  High tok_in  High tok_out
+  -----------------------------------------------------------------------
+  Q001    24,900      40,896       7,679        62,909       27,150
+  Q003     9,776      12,997       4,008        14,464        5,930
+  Q006    21,573      20,127       8,778        35,682       22,616
+  Q009    12,342      16,757       3,891        18,784        6,811
+  Q010    13,532      25,887       8,039        31,154       12,931
+  Avg     16,425      23,333       6,479        32,599       15,088
+
+
+================================================================================
+PER-QUESTION RESULTS
+================================================================================
+  Q      ✓/✗  Predicted                                Gold                                   Lat    TokIn Search GetDoc Iters  GRec
+  -----------------------------------------------------------------------------------------------------------------------------
+  Q001  ✓    Queen Arwa University                    Queen Arwa University                 47.9   24,900      3      4     4  1.00
+  Q002  ✓    Laura Lojo-Rodríguez                     Laura Lojo-Rodriguez                 117.4  165,269     35      5    11  1.00
+  Q003  ✓    Vakkorama                                Vakkorama                             14.7    9,776      1      1     2  1.00
+  Q004  ✗    groundsman                               Secretary                             96.3  207,605     18      2    13  0.00
+  Q005  ✗    Unknown                                  Red                                   59.3  138,918     11      1    12  1.00
+  Q006  ✓    Georgia Hirst                            Georgia Hirst                         62.3   21,573      1      4     4  1.00
+  Q007  ✗    Stockholm                                Boston                               682.6  130,552     35      0    10  0.00
+  Q008  ✗    Unknown                                  The Dorset Culture of the Eastern     51.0  389,128     20      1    15  0.00
+  Q009  ✓    21                                       21                                    18.0   12,342      1      1     3  0.33
+  Q010  ✓    Raheem Sterling                          Raheem Sterling                       25.3   13,532      4      1     3  1.00
+  Q011  ✓    Electra                                  Electra                               37.8   26,682      2      3     5  1.00
+  Q012  ✓    Jacqueline Georgette Cantrelle           Jacqueline Georgette Cantrelle        53.8  374,509     13      5    13  0.50
+  Q013  ✓    Rona Weerasuriya                         Rona Weerasuriya                      66.2  176,164      7      1     8  1.00
+  Q014  ✓    Kiran Shah                               Kiran Shah                           205.1  155,015     35      3    10  1.00
+  Q015  ✗    Ama Serwah Genfi                         Emmanuel Kwesi Danso Arthur Junior    82.1  122,030     10      3     8  0.00
+  Q016  ✓    Taj-ul-Masajid                           Taj-ul-Masajid                       140.5  169,531     13      6    12  1.00
+  Q017  ✓    "Manos"                                  "Manos"                               67.4   24,709      1      4     5  1.00
+  Q018  ✓    JadaL                                    Jadal                                 38.7   13,077      1      2     3  1.00
+  Q019  ✓    Creatine supplementation: A potential a  Oral creatine supplementation: A p   117.0  315,123     25      2    15  1.00
+  Q020  ✓    29/02                                    29/02                                 56.9   23,754      4      2     4  1.00
+  Q021  ✗    Unknown                                  1419                                  43.4  370,566     11      0    12  1.00
+  Q022  ✗    Luciano                                  Odeal                                185.0  132,904     35      0     9  0.50
+  Q023  ✓    Breadfast                                Breadfast                            158.7   67,893     29      6     8  1.00
+  Q024  ✓    Lady Shri Ram College for Women          Lady Shri Ram College for Women      153.4  139,118     11      1    12  0.33
+  Q025  ✓    Heaven                                   Heaven                                35.2   23,408      2      1     5  1.00
+  Q026  ✓    Lebo                                     Lebo                                  60.8   18,114      1      5     3  0.75
+  Q027  ✓    Monique Marguerite Alberte Vanwelsenaer  Monique Marguerite Alberte Vanwels    85.3   60,432     18      4     6  1.00
+  Q028  ✓    Jaja of Opobo: The slave who became a k  Jaja of Opobo: The slave who becam    50.3   11,679      4      0     3  1.00
+  Q029  ✓    Ana Djaimilia dos Santos Pereira de Alm  Ana Djaimilia dos Santos Pereira d    65.2   36,229     17      3     5  0.50
+  Q030  ✓    Mack and Sheffield                       Mack, Sheffield                       25.7    8,737      1      1     2  1.00
+  Q031  ✓    Sadiq                                    Sadiq                                 86.1  145,480     25      6    10  1.00
+  Q032  ✓    Irving                                   Irving                                27.1   12,812      2      1     3  1.00
+  Q033  ✗    The Internet                             Tweentrepreneurs                      77.5   83,711     35      0     7  0.50
+  Q034  ✓    Holly Gauthier-Frankel                   Holly Gauthier-Frankel                57.0   14,220      1      1     3  0.50
+  Q035  ✓    One Red Rose                             One Red Rose                          44.3   29,142      6      4     4  0.50
+  Q036  ✓    Professional Pests                       Professional Pests                    26.3   10,720      1      0     3  0.50
+  Q037  ✗    Unknown                                  Energetic; melodic; banging; clubb  1141.7  266,376     35      0    16  1.00
+  Q038  ✓    Genetics Nepal                           Genetics Nepal Pvt. Ltd               34.0   55,834      9      0     7  0.50
+  Q039  ✗    90%                                      94%                                  218.3  247,115     35      0    13  1.00
+  Q040  ✓    2004                                     2004                                  78.4   36,847      4      4     5  1.00
+  Q041  ✓    Nejib Ben Azouz                           Nejib Ben Azouz                      41.3   13,959      1      1     3  0.50
+  Q042  ✗    Sunset in Biafra                         Sunset at Biafra                      34.7   21,648      3      1     4  1.00
+  Q043  ✗    Unknown                                  Edwin Hughes Kendrick                311.1  564,505     35      0    16  0.00
+  Q044  ✓    Ama Barbara Biney                        Ama Barbara Biney                     99.6  143,283     18      0    12  1.00
+  Q045  ✓    Implicit Theories of Intelligence Predi  Implicit Theories of Intelligence     80.5   78,130      5      3     8  0.00
+  Q046  ✓    Maxime Gonalons; 20th century            Maxime Gonalons, 20th Century         41.3   47,723      8      1     7  1.00
+  Q047  ✗    Prison Guard                             Rudy Cox                             212.8  146,964     24      5    12  1.00
+  Q048  ✗    Unknown                                  Cozens Ranch Museum                  118.9  220,972     16      0    16  0.20
+  Q049  ✗    Girl                                     Whitesnake                           586.8  202,995     16      3    14  0.00
+  Q050  ✓    Tina Tutkova                             Tina Tutkova                          69.4   54,600     11      0     6  0.50
+  Q051  ✓    Sandie Hatch                             Sandie Hatch                          42.7   47,780      4      2     6  0.00
+  Q052  ✓    19th century; Spain                      19th century; Spain                  122.5  116,853     18      3     9  1.00
+  Q053  ✗    Andrew Elmore                            Mathilda Bjarnehed                   103.7  229,679     16      0    16  1.00
+  Q054  ✓    Melissa Marr                             Melissa Marr                          80.7   65,265      7     14     8  1.00
+  Q055  ✓    Urza Acharya                             Urza Acharya                         121.0  132,736     19      3     9  1.00
+  Q056  ✓    Sleepwalker                              Sleepwalker                          724.6   57,143      5      4     7  1.00
+  Q057  ✗    Unknown                                  Greek of the Week                    124.0  143,886     35      0    11  0.00
+  Q058  ✓    La Estrella | Argentina                  La Estrella; Argentina                97.8   28,596      3      3     6  1.00
+  Q059  ✗    Yossi Sheffi                             Richard C. Larson                    136.5  152,578     35      0     9  1.00
+  Q060  ✓    37 kg                                    37kg                                  26.7   24,504      3      1     4  1.00
+  Q061  ✗    Unknown                                  Dave Chappelle                       302.2  452,461     28      0    16  0.00
+  Q062  ✓    Equipo de Arquitectura                   Equipo de Arquitectura                84.7  128,947     35      1    10  0.75
+  Q063  ✓    Eno Ebele Jerry                          Eno Ebele Jerry                       70.7   55,458      4      4     8  1.00
+  Q064  ✗    126 VITA                                 Lyric Geography                       31.3   66,245      7      1     3  1.00
+  Q065  ✗    Unknown                                  Vera Nünning                         293.1  441,206     35      3    14  0.00
+  Q066  ✓    Sealed                                   Sealed                                68.2   50,984      6      6     6  1.00
+  Q067  ✗    10th grade                               kindergarten                         172.5  196,996     16      0    16  0.00
+  Q068  ✗    Unknown                                  Jim Hibbert.                        2834.2  317,743     32      0    16  0.00
+  Q069  ✓    Edgar McLean Stevenson Jr.               Edgar McLean Stevenson Jr.           115.9   87,860     21      3     9  1.00
+  Q070  ✗    Puttnam                                  Motshekga                            169.1  307,655     35      2    12  0.50
+  Q071  ✗    24.6                                     27                                    89.2  121,633     35      0    10  1.00
+  Q072  ✗    Unknown                                  Kevin Anderson                       248.9  258,410     35      3     6  0.00
+  Q073  ✗    8                                        9                                     38.5   28,755      3      0     5  0.00
+  Q074  ✗    Who Framed Roger Rabbit                  The Little Mermaid                   109.0  238,412     35      0    14  0.50
+  Q075  ✓    Thomas Ngomba                            Thomas Ngomba                         28.6   17,271      1      1     4  1.00
+  Q076  ✓    Ian Solomon                              Ian Solomon                           71.9   83,544     12      4     9  1.00
+  Q077  ✗    Theodor Geisel                           Manly Hall                           279.3  272,096     35      0    13  0.00
+  Q078  ✓    Fall of the Queen Bean                   Fall of the Queen Bean                74.3   48,035      4      1     7  0.00
+  Q079  ✗    Opium: A Portrait of the Heavenly Demon  In the Arms of Morpheus: The Tragi    42.1   17,936      2      1     4  1.00
+  Q080  ✗    Jae                                      J.K. Rowling                         199.2  231,591     35      0    15  0.25
+  Q081  ✓    Bullring Pikeman Statue (1798 Monument)  1798 Monument                         77.4  123,145     12      1    12  1.00
+  Q082  ✗    California Institute of Technology       Stanford University                  167.0  104,443     22      3     9  1.00
+  Q083  ✓    Russell David Lyons                      Russell David Lyons                   52.3   37,964      9      4     4  1.00
+  Q084  ✓    Mando                                    Mando                                 65.3   43,274     11      2     5  1.00
+  Q085  ✗    Dolph Ziggler                            Chris Jericho                        350.8  245,913     15      0    15  0.33
+  Q086  ✗    a small village with a big history       Little Lovely                         25.3   15,462      1      1     4  0.00
+  Q087  ✓    Osama Heikal                             Osama Heikal                          70.8   22,740      8      5     3  0.71
+  Q088  ✓    June                                     June                                  70.5   53,653     22      3     6  1.00
+  Q089  ✓    Edward Winslow                           Edward Winslow                        45.4   29,038      5      2     4  1.00
+  Q090  ✓    Tak                                      Tak                                   42.0   21,544      1      2     4  1.00
+  Q091  ✓    Jun                                      Jun                                   36.0   15,150      1      4     3  0.83
+  Q092  ✓    Kwabena Yeboah                           Kwabena Yeboah                        41.7   13,170      1      2     3  0.83
+  Q093  ✓    Marie — Her Majesty The Queen of Romani  Queen Marie of Romania               154.9  161,064     10      4     9  1.00
+  Q094  ✓    Chip Deffaa                              Chip Deffaa                           37.1   32,884      2      2     5  0.33
+  Q095  ✗    Unknown                                  Psychedelics                         119.4  212,767     18      1    16  0.00
+  Q096  ✓    Jacek Rojowski                           Jacek Rojowski                        83.2   73,710      7      3     7  1.00
+  Q097  ✓    The Dial                                 The Dial                             135.0   61,636      6      6     8  1.00
+  Q098  ✗    Azra Intizar                             David Kermani                        905.9  213,907     35      1    10  0.00
+  Q099  ✓    Dead on Site                             Dead on Site                          84.1  119,048     17      1     9  1.00
+  Q100  ✓    Pragyan Ojha                             Pragyan Ojha                          78.2   34,843      4      2     5  1.00
+  Q101  ✓    All Fives                                All Fives                             51.0   63,201      6      1     7  1.00
+  Q102  ✗    Norman Mapeza                            Norman Takanyariwa Mapeza             65.7   16,523      4      4     3  1.00
+  Q103  ✓    The Bangles — Everything                 The Bangles, Everything              166.7   55,376     15      5     6  1.00
+  Q104  ✓    Frederik Christoffel Eloff               Frederik Christoffel Eloff            61.4   42,177      9      2     5  1.00
+  Q105  ✓    Clare Stainthorp                         Clare Stainthorp                      81.7  134,868     15      1    12  0.50
+  Q106  ✓    Dosti: Friends Forever                   Dosti: Friends Forever                83.4   30,287      3      1     5  1.00
+  Q107  ✗    iLe                                      Valasia                              287.4  193,968     35      0    11  1.00
+  Q108  ✓    Rain                                     Rain                                  39.9   27,246      2      2     5  1.00
+  Q109  ✓    Ally of Justice Catastor                 Ally of Justice Catastor             202.9  167,627     30     13    10  1.00
+  Q110  ✓    Brice Andrew Larson                      Brice Andrew Larson                   35.6   12,346      1      1     3  1.00
+  Q111  ✗    Saxon                                    Death SS                            2344.2  161,818     35      1    12  0.17
+  Q112  ✗    Guillem Vilella Falgueras                Guille Milkyway                      124.0   80,576      6      2     9  0.83
+  Q113  ✓    Toke Makinwa                             Tóke Makinwa                         118.5  102,418     14      4     9  1.00
+  Q114  ✓    23 September 1856                        23 September 1856                     71.5   88,858      6      3     4  1.00
+  Q115  ✓    Anthony Charles Lynton Blair             Anthony Charles Lynton Blair         102.1   45,832     14      5     4  1.00
+  Q116  ✓    Majida El Roumi                          Majida El Roumi                      200.6   75,653      8      5     7  1.00
+  Q117  ✓    TENDER                                   TENDER                               230.8  176,766     25      6    12  1.00
+  Q118  ✓    Matthew Arnum Barnor                     Matthew Arnum Barnor                  68.4   50,494      6      4     6  1.00
+  Q119  ✓    Amherst College                          Amherst College                       39.5   28,837      4      1     5  0.33
+  Q120  ✓    Steven Gans                              Steven Gans                          121.6  112,823     12      1    12  0.00
+  Q121  ✗    Harvard T.H. Chan School of Public Healt  University of Ottawa                137.2  141,790     35      1    12  0.00
+  Q122  ✓    Folke Karl Skoog                         Folke Karl Skoog                     258.4   66,905      9      4     7  1.00
+  Q123  ✓    Ahmed Ezz                                Ahmed Ezz                             72.4   25,333      2      4     5  1.00
+  Q124  ✓    MBC Hope's Humanitarian Project of the Y  MBC Hope's Humanitarian Project of   46.7   32,708      4      3     5  1.00
+  Q125  ✓    Baghban                                  Baghban                               53.2   35,798      2      2     5  0.75
+  Q126  ✓    22 September 2023                        22 September 2023                     30.3   13,229      2      1     3  1.00
+  Q127  ✓    Dickson Mounds Museum                    Dickson Mounds Museum                 53.9   35,234      3      3     6  1.00
+  Q128  ✓    Medusa mushroom                          medusa mushroom                      112.2   47,898      5      6     7  1.00
+  Q129  ✓    Andres Clavijo                           Andres Clavijo                      1296.6  150,071     13      5    12  1.00
+  Q130  ✗    Rishi Raj Kapoor                         Rishi Kapoor                          55.3   29,441      2      3     4  1.00
+  Q131  ✓    Lactose intolerance                      lactose intolerance                   31.5   28,237      3      2     5  1.00
+  Q132  ✓    Serial Experiments Lain                  Serial Experiments Lain              131.7  159,455     30      0    12  0.75
+  Q133  ✓    2300 years; Sara Beatriz Maldonado       2300; Sara Beatriz Maldonado          57.6   31,402      2      2     5  1.00
+  Q134  ✓    hatpin                                   Hatpin                                94.6   49,308      5      3     7  1.00
+  Q135  ✓    Tokyo                                    Tokyo                                 86.6   70,428     12      3     8  1.00
+  Q136  ✗    Wayne Walters                            Linus Lerner                         142.2  205,232     14      1    16  0.00
+  Q137  ✓    17                                       17                                    93.5   55,120     10      3     7  1.00
+  Q138  ✗    Greig Fraser                             Nick Veasey                          182.2  256,918     35      1    15  0.00
+  Q139  ✓    Peaceful Valley                          Peaceful Valley                       85.3   52,381      6      2     8  0.50
+  Q140  ✗    Mashar Hamsa                             Sameera Saneesh                      120.2   21,312      2      1     4  1.00
+  Q141  ✓    Darlene Kittle                           Darlene Kittle                        60.9   23,442      1      3     5  1.00
+  Q142  ✓    Garfield                                 Garfield                             142.7   60,008      4      6    10  1.00
+  Q143  ✗    Joselyn Canfor-Dumas                     Nicholas Munene Mutuma               380.3  236,081     16      0    16  0.00
+  Q144  ✓    Mountain View                            Mountain View                        121.5   49,659      8      3     6  0.57
+  Q145  ✓    Yemi Alade                               Yemi Alade                            94.2   62,671      4      1     7  1.00
+  Q146  ✓    Joe Robbie                               Joseph Robbie                        167.2   55,826     35      1     7  1.00
+  Q147  ✗    Unknown                                  Wind farms, fisheries, alien predat   94.5  130,661     35      1    11  1.00
+  Q148  ✗    Unknown                                  Identifying Machine-Paraphrased Pla  117.2  168,998     18      0    14  0.00
+  Q149  ✓    Williston                                Williston                            841.1   95,365      8      1    10  0.50
+  Q150  ✓    Adaku                                    Adaku                                 45.6   17,439      1      1     3  1.00
+  Q151  ✗    Unknown                                  Texas Instruments 501               1013.9  207,211     16      0    16  0.00
+  Q152  ✗    neuroprotective                          Anti-glycation                       130.6  140,531     13      1    13  1.00
+  Q153  ✗    Unknown                                  Go West: The Migration Industry in   138.6  216,865     16      0    16  0.00
+  Q154  ✗    Roxane Gay                               Aaron Trammell                       168.6  340,594     19      0    16  0.00
+  Q155  ✓    Immofina                                 Immofina                             196.5  114,860     11      1    11  1.00
+  Q156  ✓    Allotey Formalism                        Allotey Formalism                     47.4   22,419      2      2     4  1.00
+  Q157  ✓    Francesca Biancani                       Francesca Biancani                    94.7   80,922      9      3     9  0.57
+  Q158  ✓    Truett                                   Truett                                95.6   53,989      6      3     8  1.00
+  Q159  ✗    Unknown                                  The Legend of Scarface               288.3  257,621     29      0    16  0.33
+  Q160  ✓    Sharon Pollard                           Sharon Pollard                        82.1   97,714     15      1     9  1.00
+  Q161  ✗    Unknown                                  Escaping the Memory                  163.8  219,109     22      0    16  0.00
+  Q162  ✗    Sarah                                    Anne                                  91.0  146,013     17      2    12  1.00
+  Q163  ✓    Mukul Pal                                Mukul Pal                             39.0   24,824      2      1     4  0.33
+  Q164  ✓    April 1967                               April, 1967                           40.9   23,674      2      3     4  1.00
+  Q165  ✗    Slavery by Another Name                  I Survived I Kissed Dating Goodbye   213.6  228,478     17      0    16  0.00
+  Q166  ✓    Dennis Reinhart                          Dennis Reinhart                      140.1  131,021      8      3    12  1.00
+  Q167  ✓    NETosis: how vital is it?                NETosis: how vital is it?           1532.0  131,216     11      1    12  1.00
+  Q168  ✓    Brownseya serpentina                     Brownseya serpentina                6196.8  196,210     13      1    15  0.33
+  Q169  ✓    Inner Land                               Inner Land                            85.0   36,592      3      4     6  1.00
+  Q170  ✗    Unknown                                  Clare Wigfall                        135.5  191,019     16      0    16  0.00
+  Q171  ✓    Yvonne Godswill Awanga                   Yvonne Godswill Awanga                78.0   27,061      3      4     5  1.00
+  Q172  ✓    The Iranian Ministry of Culture and Hig  Iranian Ministry of Culture and Hig  121.3  259,929     11      2    11  1.00
+  Q173  ✗    Kofi Busia                               Professor Mahama Duwiejua            155.3  198,227     13      1    15  1.00
+  Q174  ✓    1988-1996                                1988-96                               35.1   12,987      1      1     3  1.00
+  Q175  ✓    Amr Zaki                                 Amr Zaki                             296.4  140,406     23      0    11  1.00
+  Q176  ✓    Cristina Ortiz                           Cristina Ortiz                        56.9   57,157      6      1     8  0.50
+  Q177  ✗    Unknown                                  3:50 PM                              172.0  243,589     14      3    16  1.00
+  Q178  ✗    Mount Allison University                 Savannah College of Art and Design   326.6  254,771     14      1    16  0.00
+  Q179  ✓    Lush Life                                Lush Life                            183.0   84,501     25      2    10  1.00
+  Q180  ✓    Mbem, Cameroon                           Mbem, Cameroon                        62.8   38,148      4      1     6  0.00
+  Q181  ✗    Unknown                                  Compassionate Pugilist               280.8  241,476     26      0    16  0.00
+  Q182  ✓    Kanaria, 7                               Kanaria; seven                       143.5   56,709      3      5     7  1.00
+  Q183  ✓    Romanian Statistical Review              Romanian Statistical Review           99.1  124,186     11      0    12  1.00
+  Q184  ✓    Lillian Karabaic                         Lillian Karabaic                     120.8  165,009     35      3    11  0.75
+  Q185  ✓    Cryogenic Machining of Ti-6Al-4V         Cryogenic machining of Ti-6Al-4V    132.2  205,713     17      1    16  1.00
+  Q186  ✓    Jin Air Green Wings                      Jin Air Green Wings                  189.9   90,514     20      2     8  1.00
+  Q187  ✓    12th Fail                                12th Fail                             34.6   14,662      1      1     3  0.71
+  Q188  ✓    St. John's Health Center                 St. John's Health Center              99.2   27,453      5      0     5  1.00
+  Q189  ✗    Bossa Nova                               Binochios                            218.3  243,268     28      0    16  1.00
+  Q190  ✓    Abdisalam Ibrahim                        Abdisalam Ibrahim                    250.7   60,656      6      4     7  1.00
+  Q191  ✗    Carl Herrera; Gabriel Estaba             Gabriel Estaba; Carl Herrera          43.0   11,732      1      1     3  1.00
+  Q192  ✓    Australian                               Australian                          1691.2   64,580      8      2     8  0.50
+  Q193  ✓    AJ Auxerre                               AJ Auxerre                            83.9   56,121      6      1     7  0.00
+  Q194  ✓    Satoshi Tabata                           Satoshi Tabata                        60.7   46,078      2      2     4  1.00
+  Q195  ✓    2                                        2                                     53.3   48,204      8      3     6  1.00
+  Q196  ✗    XH558                                    XM598                                164.4  223,336     15      1    16  1.00
+  Q197  ✓    9780197549704                            978-0197549704                       139.8  148,374     11      4    14  1.00
+  Q198  ✗    Unknown                                  Timothy Barton Hayward               221.2  231,898     16      0    16  0.00
+  Q199  ✓    Scott A. Ebers                           Scott A. Ebers                       155.2  265,082     13      3    12  1.00
+  Q200  ✓    Saturna                                  Saturna                               74.4   50,002      5      1     7  1.00
+  Q201  ✓    October 28, 2014                         28 October 2014                      120.1  130,367     26      1    12  0.50
+  Q202  ✓    Stadium: Eldorado Stadium; Blantyre Tele  Eldorado Stadium; December 6, 2019    47.4   26,882      6      3     5  1.00
+  Q203  ✓    Sukhumvit Soi 23                         Sukhumvit Soi 23                      98.3   67,155      4      6     9  1.00
+  Q204  ✗    1987, Poland                             1986, Portugal                       255.0  200,718     35      0    14  0.33
+  Q205  ✗    Fonderia di Sua Altezza Reale            Officina Profumo-Farmaceutica          83.6   24,854      2      5     5  1.00
+  Q206  ✓    A Dialogue about the Impacts of Mass Dig  A Dialogue about the Impacts of Mas   59.5   24,521      1      1     4  1.00
+  Q207  ✗    Unknown                                  Michael                              775.9  146,959     17      3    12  1.00
+  Q208  ✓    109th minute; UEFA Euro 2016             109, EURO 2016                       100.5   96,828      7      3    10  1.00
+  Q209  ✗    Seth Rogen                               Edward Norton                        156.8  160,791     35      0    10  0.20
+  Q210  ✗    Unknown                                  Trudy Bronner                        184.8  218,404     13      1    16  0.00
+  Q211  ✓    Duman                                    Duman                                 38.0    7,515      5      5     2  1.00
+  Q212  ✓    Asamoah Gyan                             Asamoah Gyan                         147.1   82,355      8      2     8  1.00
+  Q213  ✓    Armando Vega                             Armando Vega                         107.0   92,020     10      3     9  0.75
+  Q214  ✓    2015, Ayoyinka                           2015, Ayoyinka                        58.5   39,123      4      1     6  1.00
+  Q215  ✓    B.O.B.                                   B.O.B.                                70.5   28,664      4      2     5  1.00
+  Q216  ✗    Unknown                                  Shafeer Sait                        6529.7  163,198     21      0    12  0.00
+  Q217  ✓    Singh Is Bliing                          Singh Is Bliing.                     277.1  120,642     10      0    12  0.50
+  Q218  ✓    Verity                                   Verity                                33.3   11,736      1      1     3  0.50
+  Q219  ✓    Fort Santiago                            Fort Santiago                         78.4   41,574      3      3     6  0.80
+  Q220  ✓    Accelerated evolution of SARS-CoV-2 in f  Accelerated evolution of SARS-CoV-2   88.6   65,539      4      2     7  1.00
+  Q221  ✓    Serial Killer                            Tobin Sprout - Serial Killer           68.8   39,500      2      3     6  1.00
+  Q222  ✓    Winky                                    Winky                                 43.1   19,733      3      2     4  1.00
+  Q223  ✓    Max Mazanov                              Max Mazanov                            61.8   27,674      5      2     5  1.00
+  Q224  ✓    Patision Avenue                          Patision Avenue                        47.2   20,715      1      1     4  0.33
+  Q225  ✗    U2                                       Running Wild                         453.7  156,984     35      0    13  0.00
+  Q226  ✓    Sacrofanite                              Sacrofanite                            38.4   21,556      3      1     4  0.33
+  Q227  ✗    Unknown                                  Rosenfeld                            114.9  134,207     12      0    12  0.00
+  Q228  ✓    Sam Curran                               Sam Curran                             45.6   17,121      2      2     4  1.00
+  Q229  ✓    Ralph Bronner                            Ralph Bronner                        169.0  171,944     26      5    13  1.00
+  Q230  ✓    Maximilian Josef Sommer                  Maximilian Josef Sommer                98.1   85,417      8      3    10  1.00
+  Q231  ✓    Paper and Watermark Museum               Paper and Watermark Museum             40.7   21,756      2      2     4  1.00
+  Q232  ✓    Sacred Heart High School Hammersmith     Sacred Heart High School             245.0  187,436     14      6    14  1.00
+  Q233  ✓    Peter King                               Peter King                             89.9   35,729      3      2     6  0.67
+  Q234  ✗    Glafcos Clerides: The Path of a Country  Glafkos Clerides: The Path of a Cou  193.9  125,059     10      5    12  1.00
+  Q235  ✓    Mahmoud Darwish                          Mahmoud Darwish                      138.1   61,718      7      1     8  1.00
+  Q236  ✗    Evil fish Wasabi is cooking up trouble   Chop Sock Chooks Bang Bang Bang Ban  142.5   84,469      7      2     9  1.00
+  Q237  ✗    REVELE FILM AND TELEVISION PRODUCTIONS   Revele Films                          42.2   34,341      3      2     6  1.00
+  Q238  ✓    Pitney Bowes                             Pitney Bowes                           44.5   26,514      2      2     5  1.00
+  Q239  ✗    Edward Said: A Legacy of Emancipation    Seek God Everywhere: Reflections on  173.7  176,529     13      0    14  0.00
+  Q240  ✗    Unknown                                  Three Months                         153.3  206,288     16      0    16  0.00
+  Q241  ✓    Dina El Wedidi                           Dina El Wedidi                         63.5   25,687      2      2     5  0.80
+  Q242  ✓    De Mthuda and Njelic                     Njelic & De Mthuda                     33.9   18,075      3      3     4  0.75
+  Q243  ✓    Tuesday, January 14                      Tuesday, January 14                    22.2   11,569      1      1     3  0.00
+  Q244  ✓    Hartlepool United                        Hartlepool United                      88.7   77,837      7      1     9  0.33
+  Q245  ✗    Faraz Anwar                              Yazan Haifawi                        165.8  141,280     13      0    12  0.20
+  Q246  ✗    Unknown                                  Florian Mussgnug                     136.3  212,179     18      0    16  0.33
+  Q247  ✓    Bantry General Hospital                  Bantry General Hospital             1574.8   44,528      5      4     6  1.00
+  Q248  ✓    Cory Monteith                            Cory Monteith                        114.7   82,585     11      2     9  0.50
+  Q249  ✗    Enquire Within Upon Everything           Practical Mechanics for Boys         167.4  145,757     23      0    12  0.50
+  Q250  ✓    Made You Up                              Made You Up                            53.5   38,973      2      3     6  0.83
+  Q251  ✓    Casey Means                              Casey Means                          129.9  101,024     13      5    10  1.00
+  Q252  ✗    Unknown                                  Brian Gilbert                        444.6  243,982     18      0    16  0.00
+  Q253  ✓    Arsenal Tula                             Arsenal Tula                         105.3   30,528      3      2     5  1.00
+  Q254  ✓    Lenny Juma                               Lenny Juma                           242.3  142,400     12      3    12  0.75
+  Q255  ✗    Tom Ford                                 Ding Junhui                          238.6  315,481     20      1    16  1.00
+  Q256  ✓    Andela                                   Andela                                69.6   29,781      3      3     5  1.00
+  Q257  ✗    Unknown                                  Marguerite Smith                     168.7  109,836     35      0     9  0.00
+  Q258  ✓    Snowy Moshoeshoe                         Snowy Moshoeshoe                       52.1   42,662     11      1     6  1.00
+  Q259  ✓    Paul Rachubka                            Paul Rachubka                        148.8  132,525     20      2    10  0.75
+  Q260  ✓    Ms. Sarah Abbassalizadeh                 Sarah Abbassalizadeh                   26.2   17,699      1      1     3  1.00
+  Q261  ✗    Femi Akin-Folami                         Femi Aghedo                          223.0  148,128     24      1    12  1.00
+  Q262  ✓    Foreign Fruit                            Foreign Fruit                          93.4   20,771      2      1     4  0.83
+  Q263  ✓    Amos Makarau                             Amos Makarau                           53.8  213,867      1      2     4  1.00
+  Q264  ✓    Tom Rice                                 Tom Rice                             111.3   66,825      7      6     8  1.00
+  Q265  ✗    Unknown                                  David Leonard Landau                 215.0  255,461     16      0    16  0.00
+  Q266  ✗    Unknown                                  27                                   142.3  219,070     17      2    16  1.00
+  Q267  ✓    Chanel Hughes                            Chanel Hughes                          98.5  173,980     14      3    11  1.00
+  Q268  ✓    Sasquatch Books                          Sasquatch Books                        82.0   46,889      8      3     7  1.00
+  Q269  ✓    Examination of Prospective Teachers' Cr  Examination of Prospective Teachers'   79.7  124,423      7      2    10  1.00
+  Q270  ✓    Steve Falat                              Steve Falat                          153.0  206,281      9      3    13  1.00
+  Q271  ✗    Unknown                                  Simerly                              237.4  287,070     35      0    16  0.00
+  Q272  ✗    Unknown                                  Core-collapse, evaporation, and tid  272.4  232,161     18      1    16  0.00
+  Q273  ✗    12" x 12"                                5" x 5"                              142.1  180,019     35      1    13  1.00
+  Q274  ✓    In Asian Spaces                          In Asian Spaces                        77.0   53,806      5      1     7  1.00
+  Q275  ✓    Polska — kraj folkloru? / Poland — a Co  Poland — a Country of Folklore?     1585.2   20,438      2      1     4  0.33
+  Q276  ✓    Mohammad Abdullah                        Sheikh Mohammad Abdullah               40.1   18,826      1      2     3  0.88
+  Q277  ✓    47                                       47                                     96.0   17,255      2      1     4  0.50
+  Q278  ✗    Union Carbide Corporation                Union Carbide and Carbon Corporation  113.5   52,111      4      1     6  0.80
+  Q279  ✗    Upper Missouri Expedition                Ashley-Henry                           80.7   40,054     10      1     6  1.00
+  Q280  ✓    Medialab                                 MediaLab Group                       118.8  104,263     16      3    12  1.00
+  Q281  ✓    Fort Smith Museum of History             Fort Smith Museum of History          137.7   83,230      6      3    10  1.00
+  Q282  ✓    Sol Campbell                             Sol Campbell                         101.7   44,116      4      3     7  1.00
+  Q283  ✓    BX 293A                                  BX 293A                                25.7   13,601      1      1     3  1.00
+  Q284  ✗    Zimri Eder                               Zimri Elder                          162.0   96,402      8      7    10  1.00
+  Q285  ✓    Come Into My Arms                        Come into my arms                    205.2  145,107     21      3    12  1.00
+  Q286  ✓    Leon Dexter Batchelor                    Leon Dexter Batchelor                120.5   30,043      3      2     5  1.00
+  Q287  ✓    Babatunde Olusegun Adewale               Babatunde Olusegun Adewale             56.7   14,581      1      2     3  1.00
+  Q288  ✓    07/28/1865                               07/28/1865                             38.5   26,729      1      1     3  1.00
+  Q289  ✗    United States and France                 United Kingdom, Germany              395.0  255,107     28      0    16  1.00
+  Q290  ✓    Çılgın Bediş, 1996                       Çılgın Bediş, 1996                     77.0   33,820      3      1     5  1.00
+  Q291  ✓    Baha                                     Baha                                   56.3   35,315      4      2     6  0.75
+  Q292  ✗    Unknown                                  The Lost Future                      408.6  272,518     31      0    16  0.00
+  Q293  ✗    Unknown                                  Christian Friedrich Samuel Hahneman  370.8  248,313     35      0    14  0.00
+  Q294  ✓    Ryan Holiday                             Ryan Holiday                         328.0  248,427     27      1    15  1.00
+  Q295  ✓    Insomnia                                 Insomnia                             126.3  137,342     33      1    10  0.50
+  Q296  ✓    Fred Gisa Rwigyema                       Fred Gisa Rwigema                   1778.5   38,608      4      2     6  0.86
+  Q297  ✓    Baron Empain Palace                      Baron Empain Palace                    52.3   19,228      2      4     4  1.00
+  Q298  ✓    Nwoko royal family                       Nwoko                                167.8  172,193     13      2    14  0.80
+  Q299  ✓    Luciana Lixandru                         Luciana Lixandru                     118.2  105,893     14      3     9  0.80
+  Q300  ✓    Evelyne Porret                           Evelyne Porret                       104.5   21,666      1      4     4  1.00
+  Q301  ✓    Seattle Sounders FC                      Seattle Sounders                     121.4   80,654      7      2     9  0.40
+  Q302  ✓    Warri Wolves                             Warri Wolves                          98.7   53,582      3      6     7  1.00
+  Q303  ✓    13 June 1852                             13 June 1852                         107.7   84,735      3      4     8  1.00
+  Q304  ✓    KeSPA Cup 2019                           Kespa Cup 2019                        47.8   12,112      1      1     3  0.50
+  Q305  ✓    Cocomiel                                 Cocomiel                             515.5  221,729     18      1    16  1.00
+  Q306  ✗    Unknown                                  Spero Therapeutics                   197.8  220,697     18      0    16  0.00
+  Q307  ✓    1944                                     1,944                                 73.5   40,573      3      2     6  1.00
+  Q308  ✓    34                                       34                                    42.1   19,364      1      2     4  0.50
+  Q309  ✓    2                                        Two waiters                           30.0   23,638      2      1     4  1.00
+  Q310  ✗    Unknown                                  Volkswagen Jetta                    1537.7  224,203     15      0    16  1.00
+  Q311  ✓    Malleus Maleficarum                      Malleus Maleficarum                   86.3   29,734      3      1     5  1.00
+  Q312  ✗    Leremi                                   Manyathela                           340.8  242,075     15      1    16  1.00
+  Q313  ✓    Svetlana Gromenkova                      Svetlana Gromenkova                   45.6   18,883      3      1     4  1.00
+  Q314  ✗    Unknown                                  Baby                                 310.8  260,877     35      0    15  0.50
+  Q315  ✓    December 1991                            December 1991                       1209.9   52,216      7      1     7  0.25
+  Q316  ✗    Sherlock                                 The Last of Us                       192.5  187,035     16      0    14  0.17
+  Q317  ✓    14.81%                                   14.81%                                50.6   18,322      2      1     4  1.00
+  Q318  ✓    copper-colored                           Copper                                35.9   13,067      1      1     3  1.00
+  Q319  ✗    London                                   Buenos Aires                         169.0  209,154     17      3    16  0.50
+  Q320  ✓    Asian Horizons                           Asian Horizons                        80.1   25,171      2      3     5  1.00
+  Q321  ✗    Bruce McLaren                            Richard James David Attwood          382.3  211,654     21      1    15  1.00
+  Q322  ✗    Diddy Riese                              California Pizza Kitchen             106.0  127,990     14      0    12  0.00
+  Q323  ✗    Unknown                                  Charlotte's Quantum Ride             166.3  207,788     16      1    16  0.00
+  Q324  ✗    Unknown                                  Dal Pescatore                        184.9  226,044     15      0    16  0.00
+  Q325  ✓    2015, Album of the Year                  2015, Album of The Year               40.5   18,773      2      1     4  0.50
+  Q326  ✗    Unknown                                  Shhh! No Gossip!                     187.2  243,708     20      1    16  1.00
+  Q327  ✓    November 1969                            November, 1969                       156.0  231,426     18      2    16  1.00
+  Q328  ✗    Unknown                                  10.5812/ijpbs.62774                  146.1  229,924     14      1    16  1.00
+  Q329  ✓    Vanic                                    Vanic                                204.8   84,444      6      5     9  0.75
+  Q330  ✓    Captain Star                             Captain Star                         608.2  238,541     29      2    15  0.60
+  Q331  ✓    Bada Lee                                 Bada Lee                              78.3   27,762     10      4     5  1.00
+  Q332  ✓    26 August 1999                            AUG 26 1999                          41.8   20,528      1      2     4  1.00
+  Q333  ✓    Rowan Simpson                            Rowan Simpson                         73.7   39,541      3      5     6  1.00
+  Q334  ✓    Yes                                      Yes                                  170.7   56,412      6      1     7  1.00
+  Q335  ✓    11                                       11 months                            144.3  181,278     31      0    12  1.00
+  Q336  ✓    Million Voices                           Million Voices                       397.3  141,660     12      0    12  0.00
+  Q337  ✓    Ethernity Networks Ltd                   Ethernity Networks                    88.2   84,311      4      5     8  1.00
+  Q338  ✓    Norman Naimark                           Norman Naimark                        77.2  158,068      2      1     4  0.67
+  Q339  ✓    China in Ten Words                       China in Ten Words                   114.6   44,555      4      3     6  0.83
+  Q340  ✓    Biswaranjan Chattapadhyay                Biswaranjan Chattapadhyay             64.0   21,750      2      1     4  1.00
+  Q341  ✓    Last Christmas                           Last Christmas                       159.5  132,315     10      1    12  1.00
+  Q342  ✓    Vanderbilt clinical oncology research c  Vanderbilt clinical oncology researc   45.0   48,373      1      2     4  1.00
+  Q343  ✗    Unknown                                  Maitreyi Raman                       146.6  232,367     19      0    16  0.25
+  Q344  ✗    Unknown                                  Advanced Coal and Energy Research Ce  140.3  223,207     21      0    16  0.00
+  Q345  ✗    Textbook                                 Swahili poetry                        88.1   59,694      4      4     9  1.00
+  Q346  ✓    CeraVe                                   CeraVe                                75.9   26,800      2      3     5  0.50
+  Q347  ✓    St. Louis                                St. Louis                             59.7   27,148      2      2     5  1.00
+  Q348  ✓    1942                                     1942                                  40.2   17,106      1      1     3  1.00
+  Q349  ✓    ODI no #1880                             ODI no. 1880                          81.3   57,204      8      1     7  1.00
+  Q350  ✓    Trefor Jenkins — Benjamin Pogrund Medal  Professor Trefor Jenkins, Benjamin P   72.8   62,082      6      2     8  1.00
+  Q351  ✓    Chikwe                                   Chikwe                                74.6   42,934      5      3     6  1.00
+  Q352  ✗    Nil Nakshar Shandaney                    Nikhoj Sangbad                       168.6   89,695      9      2     9  1.00
+  Q353  ✓    Ballast Bank                             The Wexford Ballast Bank               28.9   11,399      1      1     3  0.20
+  Q354  ✓    Churrería El Moro                        Churrería El Moro                     96.0   46,583      5      6     7  1.00
+  Q355  ✗    Maria Dalmacio                           Maria Camille Dalmacio                27.9   12,292      1      1     3  1.00
+  Q356  ✓    Mikko Uusitalo                           Mikko Uusitalo                        39.5   12,457      1      1     3  0.33
+  Q357  ✓    Leopold von Ranke                        Leopold von Ranke                    107.6   37,272      8      1     6  1.00
+  Q358  ✓    The cat bit him.                         The cat bit the author.               22.7   12,055      1      1     3  1.00
+  Q359  ✓    David Goodstein                          David Goodstein                       76.6   25,877      2      3     5  1.00
+  Q360  ✓    Cynarra Ferguson                         Cynarra Ferguson                     158.0  160,408     30      2    13  0.50
+  Q361  ✓    Neville Gruzman                          Neville Gruzman                       54.6   22,093      2      2     5  1.00
+  Q362  ✓    Lauren Jarmusz                           Lauren Jarmusz                        88.0   26,228      2      2     5  1.00
+  Q363  ✓    Cobra Verde                              Cobra Verde                           98.9   30,518      4      1     5  1.00
+  Q364  ✓    DN AGRAR GROUP SA                        DN AGRAR Group                       882.8  122,545      8      3    12  1.00
+  Q365  ✗    Unknown                                  March 5, 2021                         89.5  120,731      9      2    12  1.00
+  Q366  ✓    You're the Worst                         You're the Worst                      57.1   12,332      1      1     3  0.00
+  Q367  ✓    90 g                                     90g                                   90.6   31,077      6      2     5  1.00
+  Q368  ✓    Dame Garson                              Dame Garson                           40.5   18,451      1      2     4  1.00
+  Q369  ✓    New mural in Coghlan painted by Cuore    New mural in Coghlan painted by Cuo   65.4   30,591      4      3     6  1.00
+  Q370  ✓    Particle Film Application Influences Ap  Particle Film Application Influences  169.4  142,319     27      3    12  1.00
+  Q371  ✓    Daegu                                    Daegu                                127.9   74,464      5      2     7  1.00
+  Q372  ✓    Marcelo P. Isasi                         Marcelo P. Isasi                     142.2  144,380     17      2    12  1.00
+  Q373  ✗    Kinfauns Castle                          Stobhall                            1185.9  270,084     31      5    16  1.00
+  Q374  ✓    German University in Cairo               German University in Cairo           130.2   35,023      4      3     7  1.00
+  Q375  ✓    29 May 2015                              May 29, 2015                         154.5   40,456      4      3     6  1.00
+  Q376  ✓    February 9, 2021                         February 9, 2021                      66.6   62,402      4      1     6  1.00
+  Q377  ✓    XML                                      XML                                   52.1   25,167      2      1     5  1.00
+  Q378  ✓    Farida Osman                             Farida Osman                        1603.1   36,701      2      3     6  1.00
+  Q379  ✗    Unknown                                  2078                                 204.7  127,842     35      0    10  0.00
+  Q380  ✓    Afrigo Band                              Afrigo Band                           74.9   31,866      3      5     5  1.00
+  Q381  ✓    Revista Română de Statistică             Romanian Statistical Review           51.4   24,002      2      1     4  1.00
+  Q382  ✗    Mustafa Kemal Atatürk                    Hermann Göring                      2027.0  132,385     12      0    12  0.00
+  Q383  ✓    Alexis Nicolas                           Alexis Nicolas                       149.3   93,610     12      6     9  1.00
+  Q384  ✓    Amman                                    Amman                                 60.7   24,814      2      1     5  0.57
+  Q385  ✓    Old Kiln Trail                           Old Kiln Trail                        85.5   24,989      3      2     5  0.67
+  Q386  ✗    The Gravewalker                          Nothing According to Plan            213.7  172,537     13      0    13  1.00
+  Q387  ✓    1 lb 6 oz                                1lb 6oz                               52.3   20,773      4      1     4  1.00
+  Q388  ✓    Mercyful Fate                            Mercyful Fate                         77.2   32,243      2      2     5  0.67
+  Q389  ✓    27/08/1974                               27/08/1974                           276.7  121,734      8      3    11  1.00
+  Q390  ✓    Choko M'hango                            Choko M'hango                        171.5  116,319     32      1     9  1.00
+  Q391  ✓    2020 Portuguese Grand Prix               FORMULA 1 HEINEKEN GRANDE PRÉMIO DE  410.3  227,863     13      1    16  1.00
+  Q392  ✓    Roméo Dallaire                           Roméo Antonius Dallaire               53.7   24,367      3      1     4  1.00
+  Q393  ✓    Shibobo                                  Shibobo                               49.9   10,927      1      1     3  0.50
+  Q394  ✓    Louis Glanzman                           Louis Glanzman                       775.2   42,169      2      5     7  0.83
+  Q395  ✓    65%                                      65%                                   54.4   23,474      2      1     4  1.00
+  Q396  ✓    Episode 6; Lynn Okamoto                  6; Lynn Okamoto                     1296.1   43,016      3      2     5  1.00
+  Q397  ✓    Sister Mary Theresa Dawkins              Mary Theresa Dawkins                  67.5   38,001      2      3     6  1.00
+  Q398  ✓    Brazuca                                  Brazuca                              113.6   78,958      7      4     9  1.00
+  Q399  ✓    Captain John A. Sutter's Landing         Captain John A. Sutter's Landing     245.0  253,369     35      0    16  0.50
+  Q400  ✗    Fort Pienc                               Malakoff                             351.7  138,116     11      0    12  0.00
+  Q401  ✗    Unknown                                  GHS 41.6 million                     253.7  235,404     27      0    16  0.00
+  Q402  ✗    Unknown                                  December, Nigeria                    236.7  239,990     26      0    16  0.00
+  Q403  ✓    Nwando Achebe                            Nwando Achebe                        169.0  120,656      7      3    11  0.67
+  Q404  ✓    404 hectares                             404                                   87.0  101,019      7      2    10  1.00
+  Q405  ✗    2012                                     2011                                 147.0  256,904     29      2    16  1.00
+  Q406  ✓    Fibrodysplasia ossificans progressiva    Fibrodysplasia ossificans progressiv   66.4   34,610      2      2     5  1.00
+  Q407  ✓    Parle-G                                  Parle                                 48.3   11,952      1      1     3  0.20
+  Q408  ✓    John delos Santos                        John Daniel delos Santos               67.4   22,738      1      3     5  1.00
+  Q409  ✓    Anne Dudley                              Anne Dudley                          179.4   93,793      8      2    10  1.00
+  Q410  ✓    Alicia Moruf, PharmD, MPH, RAC-US        Alicia Moruf                          71.6   42,926      4      1     6  1.00
+  Q411  ✓    September 25, 1989                       1989 September 25                     40.9   28,707      2      2     5  1.00
+  Q412  ✗    nonacosan-10-ol                          C29                                   40.3   16,096      1      1     3  1.00
+  Q413  ✓    Rigorous location of phase transitions   Rigorous location of phase transition 3129.6  36,897      5      1     6  1.00
+  Q414  ✓    FormFactor, Inc.                         FormFactor                           149.5  239,027     13      3    12  1.00
+  Q415  ✗    Inotiv, Inc.                             Auxly                                864.9  286,503     30      1    16  0.50
+  Q416  ✓    2005                                     2005                                  23.5   11,246      1      1     3  1.00
+  Q417  ✓    Marvel Strike Force                      Marvel Strike Force                    44.1   21,928      2      1     4  1.00
+  Q418  ✓    Ablade Glover                            Ablade Glover                       1068.4   75,505      5      5     9  0.86
+  Q419  ✓    Pears                                    pears                               2154.6  115,554      9      1    11  1.00
+  Q420  ✓    FC Krasnodar                             FC Krasnodar                          75.0   65,033      7      1     8  0.67
+  Q421  ✓    Pope Nicholas I                          Pope Nicholas I                       41.4   11,828      1      1     3  1.00
+  Q422  ✗    Unknown                                  Michael Caine                        268.7  240,488     26      1    16  0.20
+  Q423  ✓    Sameera Moussa                           Sameera Moussa                       119.9   66,707      8      5     7  0.80
+  Q424  ✓    Tobias Smollett                          Tobias Smollet                        53.0   22,130      1      1     4  1.00
+  Q425  ✓    Best Cinematography, 2012                Cinematography, 2012                 104.5   34,556      3      1     5  0.11
+  Q426  ✓    Malcolm & Marie                          Malcolm & Marie                       98.9   26,620      3      2     5  1.00
+  Q427  ✓    Kevin Schilder                           Kevin Schilder                        89.3   50,694      5      1     7  1.00
+  Q428  ✓    Noakhali District                        Noakhali District                     85.6   28,556      1      4     4  1.00
+  Q429  ✓    Naseeruddin Shah                         Naseeruddin Shah                     121.7   27,253      1      6     5  0.67
+  Q430  ✓    Humayun Ahmed                            Humayun Ahmed                         54.6   17,575      1      1     3  1.00
+  Q431  ✓    31st Match, Indian Premier League, 2013  31st match, Indian Premier League, 2  998.3  101,440      7      2    10  1.00
+  Q432  ✓    Buddhist Monuments at Sanchi             The Buddhist Monuments at Sanchi       52.1   15,983      1      3     3  1.00
+  Q433  ✓    Person of Interest, Season 3, Episode 8  Person of Interest, Season 3, Episod  103.7   29,865      6      2     5  1.00
+  Q434  ✓    Avatar, 2010                             Avatar, 2010                          47.1   15,171      1      1     3  0.60
+  Q435  ✗    Unknown                                  23rd match, 2019                     116.0  101,202     35      0     9  0.00
+  Q436  ✗    Unknown                                  5th match, ICC Cricket World Cup, 20  166.4  190,445     28      2    13  0.33
+  Q437  ✗    2006 ICC Champions Trophy                ICC Under-19 World Cup, 2020        2501.1  213,727     13      0    15  0.00
+  Q438  ✓    KT Tunstall                              KT Tunstall                          188.9   88,678      6      3    10  0.29
+  Q439  ✓    Shehzad Roy                              Shehzad Roy                           82.9   28,277      2      3     5  0.71
+  Q440  ✓    Looking at History-t                     Looking at History                   168.7  165,618     10      2    13  0.67
+  Q441  ✗    Milton Obote                             Robert Mugabe                         88.5   39,981      9      0     6  0.25
+  Q442  ✓    Law & Order: Justice Is Served           Law & Order: Justice Is Served       574.0  212,967     15      1    15  0.60
+  Q443  ✗    Unknown                                  Govardhan Asrani                    2344.4  261,093     23      0    16  0.33
+  Q444  ✓    Cassano Thruston                         Cassano Thruston                      79.1   18,534      1      2     4  0.50
+  Q445  ✗    Sarah Hamilton                           Stephan Weyte                        115.3   33,947      8      0     6  0.33
+  Q446  ✓    Development of waffle with fat filling   Development of waffle with fat fillin   85.1   68,440      5      2     8  1.00
+  Q447  ✓    Ramo                                     Ramo                                 134.1   47,690     12      1     6  1.00
+  Q448  ✗    Shin Won-ho                              Kim Cheol Kyu                        140.4   95,653      8      1    10  0.00
+  Q449  ✗    Ezel                                     Reset                                227.9  154,487     13      0    12  0.00
+  Q450  ✓    Kader Khan                               Kader Khan                           105.1   67,608      6      4     9  1.00
+  Q451  ✓    20 tantos                                20 tantos                            344.3  248,042     26      2    16  1.00
+  Q452  ✗    Unknown                                  The Scouting Book for Boys           305.0  252,596     18      0    16  0.00
+  Q453  ✗    Brighton Rock                            Murder at the Windmill               360.4  210,422     15      0    15  0.20
+  Q454  ✓    Irrfan Khan                              Sahabzade Irrfan Ali Khan             53.4   20,930      1      3     4  1.00
+  Q455  ✓    Nashik                                   Nashik                                24.2   15,307      1      1     3  1.00
+  Q456  ✓    One-Punch Man                            One-Punch Man                         65.5   27,782      2      3     4  1.00
+  Q457  ✓    Orchha                                   Orchha                                66.1   19,535      1      6     3  1.00
+  Q458  ✗    University of North Carolina at Chapel   Michigan State University             255.0   82,499      8      0    10  0.00
+  Q459  ✓    Pirates of the Caribbean                 Pirates of the Caribbean             156.1   43,383      9      4     5  0.62
+  Q460  ✓    Kış Güneşi                               Kis Gunesi                           161.1  150,946     23      1    10  1.00
+  Q461  ✓    Septerra Core: Legacy of the Creator     Septerra Core: Legacy of the Creator   68.5   11,225      1      1     3  1.00
+  Q462  ✓    The Fundamentals of Bread Making         The Fundamentals of Bread Making       88.5   87,139      4      2     7  0.67
+  Q463  ✓    30/07/1980                               30/07/1980                            52.7   24,326      1      1     3  0.80
+  Q464  ✓    University of Ontario Institute of Tech  Ontario Tech University                90.1   40,754      3      5     6  1.00
+  Q465  ✓    Shivsagar Lake                           Shivsagar Lake                        46.2   11,743      1      2     3  0.60
+  Q466  ✗    Agnetha Åse Fältskog                     Yumi Arai                            733.4  241,300     22      0    16  0.00
+  Q467  ✓    Athene blewitti                          Athene blewitti                       57.6   14,297      3      2     3  1.00
+  Q468  ✓    Bhowani Junction                         Bhowani Junction                      87.6   38,081      4      1     6  0.67
+  Q469  ✓    Gertrude Pownall                         Gertrude Pownall                      48.0   36,976      1      2     4  1.00
+  Q470  ✓    Regal Cinema                             Regal Cinema                          34.3   11,063      2      1     3  1.00
+  Q471  ✗    The Curse of Chalion                     Prince of Shadows                   1493.9  135,350     16      0    12  0.40
+  Q472  ✗    Kahit Isang Saglit (A Time for Us)       Air City                             273.7  168,269     12      0    13  0.40
+  Q473  ✓    Yer Gök Aşk                              Yer Gok Ask                           97.0   65,055      3      1     6  1.00
+  Q474  ✓    Tulsidas Balaram                         Tulsidas Balaram                     126.8   61,476      5      5     9  1.00
+  Q475  ✗    Aşk-ı Memnu                              Defendant                            314.5  217,070     15      0    15  0.14
+  Q476  ✓    Francesco Cossiga                        Francesco Cossiga                    346.8   59,735      4      5     7  1.00
+  Q477  ✓    Ek Tha Tiger                             Ek Tha Tiger                          45.4   27,832      2      2     4  1.00
+  Q478  ✓    Nepenthes khasiana                       Nepenthes khasiana                    39.7   12,093      1      1     3  1.00
+  Q479  ✓    Waheed Murad                             Waheed Murad                          44.2   14,429      1      1     3  1.00
+  Q480  ✓    Two Living, One Dead                     Two Living, One Dead                 141.0   60,819      9      6     7  1.00
+  Q481  ✓    Armaghan Shahid                          Armaghan Shahid                       35.6   14,187      1      1     3  1.00
+  Q482  ✓    Billy Blade and the Temple of Time       Billy Blade and the Temple of Time    78.2   28,463      4      4     5  1.00
+  Q483  ✗    American Beauty                          Songs My Brothers Taught Me          104.4   61,118      9      0     8  0.00
+  Q484  ✓    Driulis González                         Driulis Gonzalez                      47.9   24,656      4      0     5  1.00
+  Q485  ✓    Mountain Bluebird                        Mountain Bluebird                    175.7   42,455      9      3     6  1.00
+  Q486  ✓    Ahsan Manzil                             Ahsan Manzil                          68.8   35,223      2      3     6  1.00
+  Q487  ✓    13 August 2004 – 29 August 2004 (2004)   August 13-August 29, 2004            109.1   35,786      2      5     5  1.00
+  Q488  ✓    Haroon (Aaron Haroon Rashid)             Haroon                                37.2   13,971      1      1     3  0.62
+  Q489  ✓    Muhammad Qavi Khan                       Muhammad Qavi Khan                   153.7   73,919      5      3     9  1.00
+  Q490  ✓    Benjamin Whitrow                         Benjamin Whitrow                      28.7   19,990      1      1     3  1.00
+  Q491  ✗    Paul Biya                                Samia Suluhu Hassan                   43.2   21,686      1      1     3  0.00
+  Q492  ✓    2021; University of Asia Pacific (UAP)   2021, University of Asia Pacific      44.8   24,341      2      2     5  1.00
+  Q493  ✓    Aynabaji                                 Aynabaji                             112.9   23,860      5      4     3  1.00
+  Q494  ✗    A Spy in the House                       Storm and Silence                    196.5  132,877     13      0    12  0.50
+  Q495  ✓    PRAN-RFL Group                           PRAN-RFL Group                      2672.0  103,639     15      3    10  1.00
+  Q496  ✓    Alexander David Turner                   Alexander David Turner               180.4   88,865     15      5     9  1.00
+  Q497  ✓    Kristen Bell                             Kristen Bell                        1722.2   35,557      3      2     5  0.83
+  Q498  ✓    Maryam Tanveer Ali                       Maryam Tanveer Ali                    30.9   13,772      1      1     3  1.00
+  Q499  ✓    Toyonaka                                 Toyonaka                              70.9   46,428      3      3     6  1.00
+  Q500  ✗    Fund and fight for what's right.         Fund & Fight for what's right.       169.7  151,401     14      4    12  1.00
+  Q501  ✓    Oscar                                    Oscar                                  213.7   107,411     15      7     9  1.00
+  Q502  ✓    Young Ramsay                             Young Ramsay                             5455.8   128,131     18       7    12  1.00
+  Q503  ✓    Leman Biret                              Leman Biret                               203.3   267,893     29       2    16  0.50
+  Q504  ✓    Legion - Season 1, 'Chapter 5'           Legion; Season 1; Chapter 5                64.5    13,493      1       1     3  0.83
+  Q505  ✓    Javier Rodriguez                         Javier Rodriguez                          140.4   133,023     20       0    11  1.00
+  Q506  ✓    Medea Valeryanovna Djaparidze            Medea Valeryanovna Djaparidze             103.0    43,455      8       3     6  1.00
+  Q507  ✓    Dianne R. Sutherland                     Dianne Sutherland                         196.0   180,571     10       4    13  1.00
+  Q508  ✗    B. J. (John) Vorster — husband of Martin Martini, wife                             291.1    84,575     13       3     8  1.00
+  Q509  ✗    Paul Holmes                              Ian Athfield                              451.2   251,561     19       0    16  0.00
+  Q510  ✓    R200                                     R200                                       30.3    16,345      1       2     3  1.00
+  Q511  ✗    $2.75 billion                            $1.05 billion                             182.6   134,631     11       0    12  0.00
+  Q512  ✓    Raphael Ernest Grail Armattoe            Raphael Ernest Grail Armattoe              32.6    11,772      1       1     3  0.25
+  Q513  ✗    2007                                     1980                                      256.6   174,073     17       0    13  0.00
+  Q514  ✗    Prateik Babbar                           Jai Anmol Ambani                          522.6   212,488     35       0    13  1.00
+  Q515  ✓    Robert Henzi and Robert Pfaff            Robert Pfaff & Robert Henzi                61.1    16,043      1       2     4  1.00
+  Q516  ✓    Vasco da Gama Pillar                     Vasco da Gama Pillar                       87.1    16,884      3       3     4  0.75
+  Q517  ✓    José Luis’ Virtual Book Club: Absolutely José Luis’ Virtual Book Club: Absolutely  134.1    95,416      5       5    12  1.00
+  Q518  ✓    Day of Reparation                        Day of Reparation                          59.2    23,607      1       3     5  1.00
+  Q519  ✓    Kai Ah Hee; Alan Nakagawa; Keali'i Bertl Kai Ah Hee, Alan Nakagawa and Keali'i Be   39.2    22,918      1       2     4  1.00
+  Q520  ✗    Unknown                                  Miss Ealand                               748.9   240,870     22       0    16  0.33
+  Q521  ✓    Narendra Modi Stadium, Ahmedabad         Narender Modi Stadium                     118.1    41,573      6       1     5  1.00
+  Q522  ✓    Charlotte Clark                          Charlotte Clark                            73.7    39,028      4       2     6  1.00
+  Q523  ✓    Aarti Bajaj                              Aarti Bajaj                                42.2    19,289      1       1     3  0.60
+  Q524  ✗    Flashback                                Brutal Sports                            23738.6   178,404     16       2    13  0.00
+  Q525  ✗    Hatay                                    North Transylvania                        142.8    69,118     35       0     7  0.50
+  Q526  ✓    Key To Your Heart                        Key To Your Heart                          85.6    84,376      5       4     9  1.00
+  Q527  ✓    The Lip                                  The Lip                                    25.5    14,508      1       1     3  1.00
+  Q528  ✗    Unknown                                  Danielle Robin                            332.5   232,950     25       0    16  0.00
+  Q529  ✗    Sun Wukong (Monkey)                      Plastic Man                               264.1   141,352     15       3    12  0.00
+  Q530  ✓    Qoyllur Rit'i - The Snow Star Fades      Qoyllur Rit'i - The Snow Star Fades       120.7    92,260     11       3    10  1.00
+  Q531  ✗    Unknown                                  2001                                      136.7   150,757     13       0    13  0.00
+  Q532  ✓    10.3389/fphar.2016.00258                 10.3389/fphar.2016.00258                   37.8    36,261      2       1     4  0.50
+  Q533  ✓    Pirouette                                Pirouette                                 106.5    56,738      8       6     6  1.00
+  Q534  ✗    MAPS (Monitoring Avian Productivity and  FALCON Bird Banding System                 89.7    60,397     35       0     7  1.00
+  Q535  ✓    Mosquitoes                               Mosquito                                   58.7    21,873      6       1     4  0.50
+  Q536  ✗    Bewick, Carriero, Greig, Sweet, Turbett, Turbett, Sweet, Carriero, Wolfe           145.7   129,373     11       4    11  1.00
+  Q537  ✓    LocoRoco                                 LocoRoco                                  134.6    80,036      9       3     8  1.00
+  Q538  ✗    Unknown                                  Katja Hujo                                206.0   234,582     18       0    16  0.00
+  Q539  ✓    Being As An Ocean                        Being As An Ocean.                         46.1    18,236      1       3     4  0.60
+  Q540  ✗    Siri Hustvedt                            Sharon Olds                              2677.6    84,677     19       1    13  0.20
+  Q541  ✗    Gorilla                                  a weevil                                  198.6   119,667     35       0    11  1.00
+  Q542  ✓    Snow Bros.                               Snow Bros.                                150.5    54,530      5       4     7  1.00
+  Q543  ✓    Frank Leepa                              Frank Leepa                                76.1    31,323      2       2     6  1.00
+  Q544  ✗    Unknown                                  John Talabot session                      196.0   237,790     32       1    16  1.00
+  Q545  ✓    Salman Shah                              Salman Shah                                55.8    28,601      3       1     5  1.00
+  Q546  ✓    Sam Murphy                               Sam Murphy                                 74.1    80,322      7       1     9  1.00
+  Q547  ✗    Vasco da Gama Pillar                     Magellan's Cross                          112.1   125,196     10       1    12  0.00
+  Q548  ✓    Spatial Analysis of Weather Crash Patter Spatial Analysis of Weather Crash Patter  197.3   191,868     30       3    13  1.00
+  Q549  ✓    Rod Crist                                Rod Crist                                  87.4    79,100      8       3     7  1.00
+  Q550  ✓    Selskar Abbey                            Selskar Abbey                              66.2    19,924      4       2     4  1.00
+  Q551  ✓    Sylven Masoga                            Sylven Masoga                              20.3    11,748      1       1     3  1.00
+  Q552  ✗    Pierce Brosnan                           Richard Andrew Palethorpe-Todd            388.5   127,364     35       0    11  0.50
+  Q553  ✓    Pascale Aiguionne Louise Jacqueline Mari Pascale Aiguionne Louise Jacqueline Mari  160.1    49,685      5       2     7  1.00
+  Q554  ✓    Finding the mathematical overlaps of the Finding the mathematical overlaps of the   25.2    24,506      3       4     4  1.00
+  Q555  ✓    Sister Wives                             Sister Wives                              142.5    29,181      3       3     5  1.00
+  Q556  ✓    March 1910                               March 1910                                 35.3    11,638      1       1     3  0.00
+  Q557  ✓    Olka Gretcher                            Olka Gretcher                             105.5    33,197      5       3     5  1.00
+  Q558  ✓    Abhishek Bachchan                        Abhishek Bachchan                         224.1   215,457     25       4    13  1.00
+  Q559  ✗    Peter Vuust                              Cheryl Diane Metcalf                      767.0   146,567     35       0    11  1.00
+  Q560  ✓    Plains Art Museum                        Plains Art Museum                         183.7   193,999     14       4    15  1.00
+  Q561  ✓    Arnimal                                  Arnimal                                    43.0    19,645      1       2     3  1.00
+  Q562  ✗    Matt Coulter                             Jeremy Eder                               197.2   257,074     25       1    16  0.25
+  Q563  ✓    Mathieu Flamini                          Mathieu Flamini                          1984.8    53,045      7       2     7  1.00
+  Q564  ✓    The Guildhall School of Music and Drama  The Guildhall School of Music and Drama    33.0    19,129      1       1     4  1.00
+  Q565  ✗    PEGASAS (Partnership to Enhance General  ASCENT project 10                         234.9   214,321     22       3    16  0.50
+  Q566  ✓    6187                                     6187                                       36.6    12,944      1       1     3  0.75
+  Q567  ✓    James Gallagher                          James Gallagher                           103.4    56,634      6       1     8  1.00
+  Q568  ✓    Inhibition of ferroptosis and iron accum Inhibition of ferroptosis and iron accum   33.5    44,884      1       1     3  1.00
+  Q569  ✓    Oldham Athletic v Southampton            Oldham Athletic v Southampton              55.1    14,984      6       1     3  1.00
+  Q570  ✓    Lola's Cafe                              Lola's Cafe                                96.4    53,259      4       4     7  1.00
+  Q571  ✗    Ikechukwu Somtochukwu Diogu               Ikechukwa Somotochukwa Diogu             143.9    27,078      5       2     4  1.00
+  Q572  ✓    Richard Powers                           Richard Powers                            576.2   227,915     35       2    15  1.00
+  Q573  ✗    July 24, 1956                            January 2, 1975                           178.3   222,678     35       0    15  1.00
+  Q574  ✓    Jacob Kuriype                            Jacob Kuriype                              39.2    26,414      2       2     5  1.00
+  Q575  ✓    David Michael Cockburn                   David Michael Cockburn                    148.7    73,997      8       1     9  1.00
+  Q576  ✗    Unknown                                  Cesar Dominguez                           161.7   215,759     21       0    15  0.20
+  Q577  ✓    Doctor Lautrec and the Forgotten Knights Doctor Lautrec and the Forgotten Knights   98.0    19,142      4       3     4  0.75
+  Q578  ✓    Marake                                   Marake                                     61.2    46,463     15       3     5  1.00
+  Q579  ✗    Unknown                                  Robert D. McBain                          247.8   217,993     13       2    16  0.25
+  Q580  ✗    Unknown                                  Lee Boo-jin                               204.7   173,699     30       0    13  0.25
+  Q581  ✓    Atsuko Nishida                           Atsuko Nishida                            320.7   261,785     17       5    16  1.00
+  Q582  ✓    Sergio Costa                             Sergio Costa                               30.0    12,423      1       1     3  1.00
+  Q583  ✓    Lucy Henderson                           Lucy Henderson                             57.5    22,851      2       3     5  1.00
+  Q584  ✓    Lewis Dunk                               Lewis Dunk                               1463.5    59,629     15       0     7  1.00
+  Q585  ✗    Sandeep Jauhar                           Christopher Labos                         196.2   270,687     31       0    16  0.00
+  Q586  ✗    Clyde                                    Roberto                                   341.8   117,375     10       2    13  0.00
+  Q587  ✗    Dana                                     Elaine                                    141.4   209,435     14       1    16  0.00
+  Q588  ✓    Kai Tomety                               Kai Tomety                                110.4    66,142      6       2     8  1.00
+  Q589  ✓    Kissiwaa                                 Kissiwaa                                   53.7    38,785      2       1     4  1.00
+  Q590  ✓    HG00981-01A1                             HG00981-01A1                               93.6    81,984      6       2     8  1.00
+  Q591  ✗    Global History, Globally: Research and P Libanius: A Critical Introduction         215.4   143,815     15       0    13  0.00
+  Q592  ✓    Oware                                    Oware                                     190.1   155,599     15       4    12  1.00
+  Q593  ✗    Sonic the Hedgehog (2020)                Manuelita                                3865.2   144,146     24       0    12  0.00
+  Q594  ✗    Liam Gallagher                           Talvin Singh                              173.8   192,443     30       0    12  0.14
+  Q595  ✓    3rd Rock from the Sun — Season 1, Episod 3rd Rock From the Sun; Season 1; Episode   71.9    27,818      2       2     5  1.00
+  Q596  ✓    Paul Segal                               Paul Segal                                 45.5    40,449      3       3     7  1.00
+  Q597  ✓    Nigeria                                  Nigeria                                    44.5    13,304      2       1     3  1.00
+  Q598  ✓    Cecil Belfield Clarke                    Cecil Belfield Clarke                     193.6   169,504     12       1    14  0.17
+  Q599  ✓    Anthony Jewell Akins                     Anthony Jewell Akins                      954.4    99,359     24       2     9  1.00
+  Q600  ✓    2010                                     2010                                      197.9    46,661      5       1     7  1.00
+  Q601  ✓    Cherokee                                 Cherokee Nations                           87.2    48,079      3       2     6  0.50
+  Q602  ✓    Oyetayo                                  Oyetayo                                    86.0   107,246     13       3    10  0.75
+  Q603  ✓    Richie on the Rocks                      Richie on the Rocks                        47.6    18,366      5       1     3  1.00
+  Q604  ✓    Coprinus comatus                         Coprinus comatus                          136.4   121,374      7       3     8  1.00
+  Q605  ✓    Frederick Lewis Allen Room               Frederick Lewis Allen Room                382.2   255,841     23       0    16  1.00
+  Q606  ✗    Kristen Hager                            Perdita Weeks                             471.3   122,044      9       0    12  0.00
+  Q607  ✓    bedroom                                  bedroom                                    33.0    14,090      1       2     3  1.00
+  Q608  ✓    Alcatraz                                 Alcatraz                                 1229.5    62,869      5       2     8  1.00
+  Q609  ✓    Kigali Arena, Kigali, Rwanda             Kigali Arena; Kigali, Rwanda               62.0    19,347      2       1     4  0.67
+  Q610  ✓    Neymar                                   Neymar                                    166.5   134,057     14       2    12  0.83
+  Q611  ✗    Unknown                                  Joan Alta Iwan                            196.7   229,570     35       0    16  0.00
+  Q612  ✗    Unknown                                  William Enrico Fry                        181.2   221,791     20       0    16  0.00
+  Q613  ✓    The Alexa Game                           The Alexa Game                             77.9    20,566      3       1     4  1.00
+  Q614  ✓    The Book of New Zealand Women            The Book of New Zealand Women             161.2    68,725     10       5     8  1.00
+  Q615  ✓    01:04 PM                                 01:04 PM                                   32.0    11,729      1       1     3  1.00
+  Q616  ✗    France                                   Japan                                     151.2   159,895     16       0    13  0.00
+  Q617  ✓    Joseph Anokye                            Joseph Anokye                              32.1    11,117      4       0     3  1.00
+  Q618  ✗    Unknown                                  Alan Sanfey                               259.2   233,436     29       1    16  0.00
+  Q619  ✗    Jaipur Pink Panthers                     NC Dinos                                  339.9   167,161     28       0    12  0.00
+  Q620  ✗    Make politics boring again               "I know I\                                270.4   222,125     20       0    16  0.00
+  Q621  ✓    Thierry Dunter                           Thierry Dunter                             42.2    28,823     11       2     4  1.00
+  Q622  ✓    The Perfect Mother                       The Perfect Mother                        206.8   117,146     35       2    10  1.00
+  Q623  ✓    Pipe                                     Pipe                                       90.8    60,541      6       1     8  0.50
+  Q624  ✓    Vangel Naumovski                         Vangel Naumovski                          110.8    85,561     13       6     8  1.00
+  Q625  ✗    Françoise Arnoul                          Françoise Annette Marie Mathilde Gautsc  259.9   109,782     17       2    10  1.00
+  Q626  ✓    7%                                       7%                                       1594.6   171,355      5       2     6  1.00
+  Q627  ✗    Unknown                                  The Gingras Trading Post State Historic   191.5   235,416     28       1    16  0.00
+  Q628  ✗    Unknown                                  Collecting Ladies: Ferdinand von Mueller  130.1   192,948     35       0    13  0.00
+  Q629  ✓    The Night Café                           The Night Café                            229.7    87,320     14       4    10  0.88
+  Q630  ✗    1973, Zimbabwe                           1970, Nigeria                             176.1   238,151     22       0    16  0.00
+  Q631  ✗    KTEZO                                    VETLAM                                    126.0   143,980     10       2    13  1.00
+  Q632  ✓    Abangan 2024                             Abangan 2024                               31.2    17,850      1       2     4  1.00
+  Q633  ✓    Blink-182                                blink-182                                  79.3    70,322      7       1     4  1.00
+  Q634  ✓    1757 K                                   1757 K                                     99.9    95,202      8       1    10  1.00
+  Q635  ✗    Unknown                                  Jessica Carpenter                         165.0   242,541     25       2    16  0.00
+  Q636  ✓    Jacob W. Crisp                           Jacob W. Crisp                             48.4    43,704      9       2     6  1.00
+  Q637  ✓    Galacta: The Battle for Saturn           Galacta: The Battle for Saturn             52.6    30,056      5       3     5  1.00
+  Q638  ✓    Ameesha Patel                            Ameesha Patel                              93.8    39,235      3       4     6  0.78
+  Q639  ✓    Tim Ellis                                Tim Ellis                                  71.4    49,151      4       3     7  1.00
+  Q640  ✓    Kang Se-hoon                             Dr. Kang Se Hoon                           22.7    10,532      1       1     3  1.00
+  Q641  ✗    Stalking the Wild Pendulum: On the Mecha Secret Oral Teachings in Tibetan Buddhis   50.7    24,235      6       1     4  0.00
+  Q642  ✓    1980                                     1980                                       37.8    25,498      3       1     5  1.00
+  Q643  ✗    Sib Vicious                              Naila Pierce                              256.1   141,879     35       0    10  0.00
+  Q644  ✗    Skateaway                                Gae Lowe (Le Duel)                        229.7   177,739     35       0    12  1.00
+  Q645  ✗    Unknown                                  Vinita Bhargava                           178.8   168,764     35       1    13  0.00
+  Q646  ✗    Unknown                                  Jacqui Friedling                          154.4   202,091     17       0    16  0.00
+  Q647  ✓    Gloria-Sophie Burkandt                   Gloria-Sophie Burkandt                    177.8   180,968     21       5    13  1.00
+  Q648  ✓    live crickets                            crickets                                   74.1    14,477      1       1     3  1.00
+  Q649  ✓    Convent of Our Lady of Mercy             Convent of Our Lady of Mercy               61.1    37,491      3       1     6  1.00
+  Q650  ✓    Chakori                                  Chakori                                    73.5    23,518      3       5     4  1.00
+  Q651  ✗    Unknown                                  Claude Berel Langmann                    2577.3   239,600     13       0    16  0.00
+  Q652  ✓    Josh Nelson                              Josh                                       30.3    11,995      1       1     3  1.00
+  Q653  ✗    Unknown                                  Why would any graduate want to start a b  129.3   168,053     32       0    12  1.00
+  Q654  ✓    Bandish Bandits                          Bandish Bandits                           154.7    36,315      7       3     5  0.50
+  Q655  ✓    2016                                     2016                                      115.4   121,350      9       1    11  1.00
+  Q656  ✗    Junior Genius Guides                     Magic Mommy Stories                       121.5   130,665     11       0    12  0.00
+  Q657  ✓    The Lives of Others                      The Lives of Others                       526.0   197,569     11       2    14  0.29
+  Q658  ✗    Unknown                                  New directions in the treatment of Gauch  214.2   204,354     24       0    15  0.00
+  Q659  ✓    Bruce Chapman                            Bruce Chapman                             101.1    99,873     13       1    10  1.00
+  Q660  ✗    Boulder, Colorado                        Mallorca, Spain                           207.6   168,617     35       0    13  0.33
+  Q661  ✓    Esther Wyndham                           Esther Wyndham                             53.8    26,391      6       1     4  1.00
+  Q662  ✓    Parowski                                 Parowski                                  285.9   181,140     14       1    14  0.80
+  Q663  ✗    Unknown                                  World Of The Dream Merchants              368.1   312,011     35       0    16  0.00
+  Q664  ✗    Unknown                                  Martyna Laszcz                            209.7   221,248     16       0    16  0.00
+  Q665  ✗    Unknown                                  Sardar Khan                               443.9   168,461     16       1    12  0.80
+  Q666  ✓    Stixxay                                  Stixxay                                   107.9    70,788     23       3     7  1.00
+  Q667  ✗    Unknown                                  1939                                      244.6   200,589     35       3    14  0.25
+  Q668  ✗    Equus quagga                             Melamprosops phaeosoma                    203.0   102,342     11       1    13  0.00
+  Q669  ✗    Abstract Composition (Birds)             Electric Labyrinth                        333.4   215,392     14       2    16  0.00
+  Q670  ✓    Uche Jombo                               Uche Jombo Rodriguez                       93.7    79,643     16       2     8  0.50
+  Q671  ✗    Trinkets                                 Voltaire High                             329.8   149,643     35       0    11  0.20
+  Q672  ✓    Jagannatha Hora                          Jagannatha Hora                           153.5   143,719     12       4    10  1.00
+  Q673  ✗    Superga                                  Dr Martens                                205.4   151,452     26       0    12  0.50
+  Q674  ✗    Unknown                                  Unknown                                   254.8   211,144     23       2    14  0.00
+  Q675  ✓    Zius Galit                               Zius Galit                                 34.2    12,074      2       1     3  1.00
+  Q676  ✗    500 pounds per annum                     500 Egyptian pounds per year               51.0    21,678      1       1     3  1.00
+  Q677  ✓    Ross Andel                               Ross Andel                                113.4   131,404     22       2    12  1.00
+  Q678  ✓    12 August 1985                           12/08/1985                                 80.5    43,495      9       2     6  1.00
+  Q679  ✓    Hang the DJ                              "Hang the DJ"                              33.3    13,997      1       1     3  0.50
+  Q680  ✗    Ruben Neves                              Andrea Pirlo                              178.5    84,524     10       1     9  0.50
+  Q681  ✓    Duncan Clarke                            Duncan Clarke                              36.9     7,614      1       1     2  1.00
+  Q682  ✓    intersemiotic convergence                Intersemiotic Convergence                  35.9    35,899      2       1     4  1.00
+  Q683  ✗    Unknown                                  Shoummo Ahsan Khandoker                   146.3   119,307     35       0    10  0.00
+  Q684  ✗    The Magic Gang                           COUNTERFEIT.                              231.0   127,216     35       0    10  0.14
+  Q685  ✓    Porz Goret                               Porz Goret                                 59.5    25,311      2       2     5  1.00
+  Q686  ✓    70%                                      70%                                      8302.0    25,913      4       4     4  1.00
+  Q687  ✓    Old Church Basement                      Old Church Basement                       122.4    68,412     13       4     7  1.00
+  Q688  ✗    Unknown                                  Nina Navazio                              131.4   216,822     16       0    16  0.20
+  Q689  ✓    Illusion                                 Illusion                                  233.0   206,228     12       2    15  0.33
+  Q690  ✓    Montgomery Slatkin                       Montgomery Slatkin                        162.1   192,050     23       3    14  1.00
+  Q691  ✓    RDPL-34062                               RDPL-34062                                143.3    41,239      3       7     7  1.00
+  Q692  ✗    The Churning Seas of London              Perfect Dark: Alien Conflict              310.9   199,202     12       1    15  1.00
+  Q693  ✗    Unknown                                  Stephen Fontenot                          188.2   210,382     18       0    16  0.00
+  Q694  ✗    Unknown                                  Norman Vanua                              468.5   175,104     26       0    12  0.00
+  Q695  ✗    Essays, Literary and Biographical        Characters and Anecdotes of Charles the   285.3   233,998     11       4    16  0.50
+  Q696  ✓    Ron Rivett                               Ron Rivett                                350.4   219,802     35       2    14  1.00
+  Q697  ✗    Unknown                                  Micro Man                                 101.5   230,934     15       0    16  0.67
+  Q698  ✓    Andre Jarju                              Andre Jarju                                91.3    51,676      3       3     7  0.67
+  Q699  ✓    Jenny Karezi                             Tzeni Karezi                              261.6   120,790     22       1    10  0.83
+  Q700  ✓    Sankomota                                Sankomota                                  50.4    26,205      2       2     5  1.00
+  Q701  ✗    Alessandro Mahmoud                       Kwon So-hee                               176.9   147,816     26       0    12  0.00
+  Q702  ✓    Macrocheira kaempferi                    Macrocheira Kaempferi                      47.5    50,185      5       1     3  0.50
+  Q703  ✗    Kofi Kwarko Gyan                         Kiki Gyan                                  61.0    29,977      3       2     5  1.00
+  Q704  ✗    Susanne Katherina Langer                 Albert Pike                               208.6    81,127     11       2     9  0.00
+  Q705  ✓    Johannesburg                             Johannesburg                               29.4    12,265      1       1     3  1.00
+  Q706  ✓    NoMBe                                    NoMBe                                      88.1    42,373      2       3     6  0.71
+  Q707  ✓    Unknown                                  Unknown                                    52.2    13,131      1       2     3  0.67
+  Q708  ✓    2B Intelligent Soft S.A.                 2B Intelligent Soft                      8335.3    54,180      4       3     5  1.00
+  Q709  ✗    ukusoka                                   Ukudlanga                                 65.8    68,360      1       3     5  1.00
+  Q710  ✗    Lilian Zaki Morad                        Lambros Vorloou                           157.8   141,083     15       0    12  0.00
+  Q711  ✓    Terry C. Pelster                         Terry C. Pelster                           49.9    34,690      4       2     4  1.00
+  Q712  ✗    careless and negligent operation with de dangerous driving occasioning death       158.5   221,517     19       0    15  1.00
+  Q713  ✗    Lathan Moses Stanley Echols              Minh Nguyen                               147.6   132,770     11       0    12  0.50
+  Q714  ✓    Rome, Winter 1967                        Rome, Winter 1967                          74.6    75,958     12       2     7  1.00
+  Q715  ✓    Imo State, Nigeria                       Imo, Nigeria                               57.2    43,952      6       2     6  1.00
+  Q716  ✗    Unknown                                  Trudy Bronner, Mathematics                225.7   287,621     35       3    16  0.00
+  Q717  ✗    Unknown                                  Cigarette                                 231.5   212,987     17       0    16  0.00
+  Q718  ✓    Peter Dizikes                            Peter Dizikes                              80.5    52,155     10       3     6  1.00
+  Q719  ✓    Giusewa                                  Giusewa                                    52.5    26,224      9       3     4  1.00
+  Q720  ✓    Tinsel                                   Tinsel                                     92.7    19,830      2       1     4  1.00
+  Q721  ✓    Fábio Coentrão                           Fabio Coentrao                             97.6   112,047     22       2    10  1.00
+  Q722  ✓    Rose                                     Rose                                       64.0    27,849      5       1     5  0.33
+  Q723  ✗    Unknown                                  Mohammed Olatunde Dabiri                  123.0   124,648     15       1    12  0.00
+  Q724  ✗    Little America backpack                  Curved Hem                                233.5   101,542     35       0     8  0.50
+  Q725  ✓    Unknown                                  Unknown                                    43.9    28,712      3       1     5  0.75
+  Q726  ✓    Emily Aston                              Emily Aston                                47.8    22,932      4       1     4  0.33
+  Q727  ✓    Monpura                                  Monpura                                   102.5    40,984      4       3     6  1.00
+  Q728  ✓    Ewuare II                                Ewuare II                                  56.1    47,792      5       2     7  1.00
+  Q729  ✗    University of Oxford                     University of Aberdeen                    169.9   168,119     22       2    12  1.00
+  Q730  ✓    Unknown                                  Unknown                                    94.5    53,039      7       2     7  1.00
+  Q731  ✗    Unknown                                  Dr. Amos Nkrumah                          176.0   243,230     18       0    16  0.00
+  Q732  ✗    Bernardino de Sahagún                     Joseph Dalton Hooker                     283.3   250,425     14       1    16  1.00
+  Q733  ✗    Unknown                                  Genghis Khan, His Heirs and the Founding  156.0   191,619     35       2    14  0.00
+  Q734  ✓    Gostick                                  Gostick                                    67.6   172,730      2       2     6  1.00
+  Q735  ✓    Kaixana                                  Kaixana                                    69.3    25,904      3       3     5  1.00
+  Q736  ✗    Unknown                                  Rodenburg                                 133.2   167,319     27       2    13  1.00
+  Q737  ✓    letter of affinity                       Letter of affinity                         59.6    38,393      2       2     5  1.00
+  Q738  ✓    Abia Warriors Football Club              Abia Warriors Football Club              1645.7    74,252     10       3     6  1.00
+  Q739  ✗    Snow God                                 Goat Flower                                93.5    61,069     13       3     7  1.00
+  Q740  ✓    AdenoPlus                                AdenoPlus                                  22.5    13,719      1       1     3  1.00
+  Q741  ✓    The Light                                The Light                                  79.2    55,467      8       3     7  1.00
+  Q742  ✗    Gray Road                                Glass Furnace Way                         682.5    87,350      3       3     6  0.00
+  Q743  ✓    Blind                                    Blind                                      53.2    26,217      2       2     5  1.00
+  Q744  ✓    Laura                                    Laura                                     216.3   152,944     16       0    12  1.00
+  Q745  ✗    HuffPost                                 Phoenix New Times                          84.0    58,448     35       0     6  0.00
+  Q746  ✓    53%                                      53%                                        20.7    14,538      2       1     3  1.00
+  Q747  ✗    Unknown                                  Induction Design: A Method for Evolution  178.8   215,850     35       0    16  0.00
+  Q748  ✓    23 June                                  June 23                                    50.4    16,291      7       1     3  0.00
+  Q749  ✓    VLipstick                                Lipstick                                   34.3    11,368      1       1     3  1.00
+  Q750  ✓    November 5, 2019                         November 5th, 2019                         50.2    20,026      2       1     4  1.00
+  Q751  ✗    Unknown                                  Aaradhya Bachchan                         740.6   199,895     19       0    16  0.00
+  Q752  ✓    Andrew Gordon                            Andrew Gordon                             181.6   253,106     15       3    16  1.00
+  Q753  ✓    Moving Forward                           Moving Forward                            167.7   101,831     10       3    10  1.00
+  Q754  ✓    Paropsis dilatata                        Paropsis dilatata                         114.6   215,943      9       3    13  1.00
+  Q755  ✓    Emmit Fenn                               Emmit Fenn                                189.4   112,482      6       5    11  0.86
+  Q756  ✓    AND1                                     AND1                                       30.1    14,790      1       1     3  1.00
+  Q757  ✓    Graham Gordy                             Graham Gordy                              109.6   136,311     15       2    12  1.00
+  Q758  ✗    Maiden Lane                              Washington St.                            195.6   238,051     19       0    16  0.00
+  Q759  ✗    Norwid                                   Reclus                                    376.1   222,439     20       0    16  0.00
+  Q760  ✓    Joost Wolfswinkel                        Joost Wolfswinkel                          96.5    83,089     19       1     8  1.00
+  Q761  ✓    Bosede                                   Abosede                                    69.8    31,592      2       2     6  0.00
+  Q762  ✓    46.30 centimetres                        46.30 centimetres                          26.2    12,784      1       1     3  1.00
+  Q763  ✓    Psycho Sally                             Psycho Sally                               75.9    75,399      6       1     9  1.00
+  Q764  ✓    December 15, 1997                        December 15, 1997                          55.8    19,227      1       2     4  1.00
+  Q765  ✓    5 TB                                     5TB                                        32.5    11,902      1       1     3  1.00
+  Q766  ✓    Benedict Cumberbatch                     Benedict Timothy Carlton Cumberbatch      848.0   189,196     19       0    15  1.00
+  Q767  ✗    Unknown                                  Estou Livre                               184.1    79,803     35       0     7  0.33
+  Q768  ✓    María Constanza Guzmán                   María Constanza Guzmán                   2683.7    49,446      3       2     6  0.33
+  Q769  ✓    Bedford                                  Bedford                                    27.1    13,125      1       1     3  1.00
+  Q770  ✓    Alexander L. Yarin                       Alexander Yarin                            51.5    32,186      3       3     6  1.00
+  Q771  ✓    Wing                                     wing three-quarter                         28.8    12,021      1       1     3  0.00
+  Q772  ✓    Isgro                                    Isgro                                     132.8   169,158      3       1     5  0.50
+  Q773  ✓    Barbizon                                 Barbizon                                  137.4   123,789     10       5    11  1.00
+  Q774  ✓    SMC-09-020                               SMC-09-020                                 48.7   197,985      2       1     4  1.00
+  Q775  ✓    Evangeline Walton                        Evangeline Walton                          72.0    29,276      4       2     5  1.00
+  Q776  ✓    Kenya                                    Kenya                                      99.3    97,232     12       3    10  1.00
+  Q777  ✓    Sanatorio de la Trinidad                 Sanatorio de la Trinidad                   23.3    11,913      1       1     3  0.33
+  Q778  ✓    Rewind                                   Rewind                                     60.6    12,400      2       2     3  0.75
+  Q779  ✗    Tomomi Kobayashi                         Masata Kato                               282.4   250,238     27       1    16  0.67
+  Q780  ✓    Atari 130XE                              Atari 130XE                                74.5    50,229     13       5     6  1.00
+  Q781  ✓    Louis Avet; 13                            Louis Avet, 13                           121.3    61,440      4       2     7  1.00
+  Q782  ✗    Unknown                                  Kathryn Stack Morgan                      212.3   217,579     27       1    16  1.00
+  Q783  ✓    166,105                                  1,66,105                                   30.8    13,464      1       1     3  1.00
+  Q784  ✓    20                                       20                                         89.7    19,549      2       2     4  0.62
+  Q785  ✓    Rebecca                                  Rebecca                                   104.8    54,274      9       0     6  1.00
+  Q786  ✓    Hsiang Sing Naik                         Hsiang Sing Naik                           40.8    39,329      1       1     4  1.00
+  Q787  ✓    OwlMan                                   Owlman                                     51.9    14,403      1       2     3  0.50
+  Q788  ✗    Pierre-Louis Reppelin                    Pierre Montale                            120.7    85,081     20       3     9  1.00
+  Q789  ✓    Reasons of a Hindu for rejecting the Doc Reasons of a Hindu for rejecting the Doc   76.1   102,386      1       1     5  1.00
+  Q790  ✓    Smilegate Foundation                     Smilegate Foundation                       39.1    11,943      1       1     3  0.67
+  Q791  ✓    Wisconsin No. 38                         Nicotiana tabacum variety Wisconsin 38    107.0    44,949      5       1     7  1.00
+  Q792  ✗    John Madin                               Raffaele Contigiani.                     1459.4   197,746     18       0    15  0.20
+  Q793  ✓    Graham cracker                           Graham Cracker Crumble                     72.7    26,304      3       2     5  1.00
+  Q794  ✗    Unknown                                  Noor Taher                                332.2   250,846     27       0    16  0.00
+  Q795  ✗    E. De Beukelaer & Compagnie              Guerlain                                  584.6   319,300     34       0    16  0.40
+  Q796  ✗    Unknown                                  Preston                                  2171.1   210,900     17       1    16  0.00
+  Q797  ✓    Hannah Belcher                           Hannah Belcher                            259.1   223,628     16       0    16  0.33
+  Q798  ✓    Aaron Strick                             Aaron Strick                              106.2   153,532     26       4    12  0.67
+  Q799  ✓    Black Sheep                              Black Sheep                                68.3    24,180      3       5     4  0.80
+  Q800  ✓    Madhumalti                               Madhumalti                                113.7    75,763      7       6     8  1.00
+  Q801  ✓    65                                       65                                         15.1     6,857      1       0     2  1.00
+  Q802  ✓    Loving Frank                             Loving Frank                               87.5    54,574      7       4     7  1.00
+  Q803  ✗    Unknown                                  Demi Mabry                                153.1   219,471     24       1    16  1.00
+  Q804  ✓    THE DAWN OF AUSTRALIAN COLONISATION      THE DAWN OF AUSTRALIAN COLONISATION       104.9    46,473      2       3     7  1.00
+  Q805  ✓    Ivatherm Eau Thermale Herculane Ivapur H Ivapur Hidra                               53.2    30,491      2       3     5  1.00
+  Q806  ✗    multiple-membership multiple-classificat multiple-membership, multiple-classifica   67.7    33,204      5       3     5  1.00
+  Q807  ✓    LaVyrle Spencer                          LaVyrle Spencer                          4585.8   132,549     10       2    12  1.00
+  Q808  ✗    Unknown                                  Last Supper                               190.0   233,000     35       3    16  0.50
+  Q809  ✗    The Great Omar                           The Rubáiyát of Omar Khayyám.             125.7    68,691     10       3     8  1.00
+  Q810  ✓    Ihuoma Sonia Uche                        Ihuoma Sonia Uche                         222.7   148,477      8       3    12  1.00
+  Q811  ✓    115                                      115                                        22.9    10,217      1       1     3  0.50
+  Q812  ✗    Unknown                                  Robert and Washington   Title:- "The Phy  348.7   217,656     14       0    16  0.00
+  Q813  ✓    Hedging in search of a new age of non-al Hedging in search of a new age of non-al   96.8    80,685      6       2     9  1.00
+  Q814  ✓    Sergio Reggiani                          Sergio Reggiani                            60.3    13,003      1       1     3  1.00
+  Q815  ✗    Unknown                                  Walter Allen                              116.4   167,517     35       0    12  1.00
+  Q816  ✓    Heroes, Cowards, & Traitors: The Crimean Heroes, Cowards, & Traitors: The Crimean   51.3    51,621      2       2     5  1.00
+  Q817  ✓    Giovanna Fletcher                        Giovanna Fletcher                         100.0    37,130      3       3     6  0.80
+  Q818  ✗    Unknown                                  The Great Blue Heron, Patient Hunter;  W  123.9   187,578     17       1    16  0.00
+  Q819  ✓    2016-10-15                               October 15, 2016                           49.2    21,442      1       3     4  1.00
+  Q820  ✓    Namaste — Almost Human                   Namaste, Almost Human                      79.3    29,342      3       3     5  1.00
+  Q821  ✓    Kune Rima                                Kune Rima                                 143.9   127,179     13       3    11  1.00
+  Q822  ✓    The Gods Must Be Crazy                   The Gods Must Be Crazy                    103.4   126,427     11       2    12  1.00
+  Q823  ✓    Dr. James Russell                        Dr. James Russell                          54.3   101,976      3       1     5  0.33
+  Q824  ✓    Cry, Heart, But Never Break              Cry, Heart, But Never Break               111.2    57,001      6       6     7  0.80
+  Q825  ✓    Immaterial                               Immaterial                                100.3    94,212     16       4     8  1.00
+  Q826  ✓    The Good Karma Hospital, Season 3        Season 3, The Good Karma Hospital          67.4    21,602      4       5     4  1.00
+  Q827  ✓    June 2023                                June 2023                                  21.5    11,856      1       1     3  1.00
+  Q828  ✓    Gyedu-Blay Ambolley                      Gyedu-Blay Ambolley                        65.1    40,162      4       2     6  1.00
+  Q829  ✓    Cocomelon                                Cocomelon                                  82.3    53,086      6       1     7  0.40
+  Q830  ✓    Daniel Goleman                           Daniel Goleman                            121.4    78,857     10       4     9  1.00

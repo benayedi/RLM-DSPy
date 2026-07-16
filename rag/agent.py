@@ -18,10 +18,12 @@ Usage:
 from __future__ import annotations
 
 import os
+import sys
 import time
 from dataclasses import dataclass, field
 
 import dspy
+import requests as _requests
 from dotenv import load_dotenv
 from dspy.utils.usage_tracker import track_usage
 
@@ -36,6 +38,7 @@ class RunMetrics:
     """Per-question metrics accumulated across all REPL turns and delegations."""
 
     latency_s: float = 0.0
+    retrieval_latency_s: float = 0.0  # time spent inside search_index + get_document calls
     input_tokens: int = 0
     output_tokens: int = 0
     iterations: int = 0
@@ -78,7 +81,7 @@ def build_lm() -> dspy.LM:
     api_version = os.environ.get("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
     model = os.environ.get("AZURE_OPENAI_MODEL", "gpt-5.4-mini")
 
-    return dspy.LM(
+    kwargs = dict(
         model=f"azure/{model}",
         api_base=endpoint,
         api_key=api_key,
@@ -87,14 +90,18 @@ def build_lm() -> dspy.LM:
         max_tokens=int(os.environ.get("AZURE_OPENAI_MAX_TOKENS", "16000")),
         cache=False,
     )
+    reasoning_effort = os.environ.get("AZURE_OPENAI_REASONING_EFFORT", "")
+    if reasoning_effort:
+        kwargs["reasoning_effort"] = reasoning_effort
+    return dspy.LM(**kwargs)
 
 
 def build_rlm_agent(
     retriever: FaissRetriever,
     depth: int = 0,
     max_depth: int = 5,
-    max_iterations: int = 25,
-    max_search_calls: int = 50,
+    max_iterations: int = 16,
+    max_search_calls: int = 35,
     metrics: RunMetrics | None = None,
     verbose: bool = False,
     default_top_k: int = 10,
@@ -130,9 +137,10 @@ def build_rlm_agent(
         """
         if metrics.search_calls >= max_search_calls:
             print(f"    [search BLOCKED — limit {max_search_calls} reached] {query[:60]!r}")
-            return [{"score": 0.0, "doc_id": "LIMIT", "text": (
-                f"Search limit of {max_search_calls} calls reached. "
-                "Stop searching and provide your best answer based on what you already retrieved."
+            return [{"score": 0.0, "doc_id": "", "text": (
+                f"[SEARCH DISABLED — you have used all {max_search_calls} search calls. "
+                "You must call SUBMIT(answer=...) immediately with your best answer. "
+                "Do not call search_index again."
             )}]
 
         if query in metrics._query_cache:
@@ -140,13 +148,18 @@ def build_rlm_agent(
             return metrics._query_cache[query]
 
         t0 = time.perf_counter()
-        results = retriever.search_index(query, top_k=top_k)
+        try:
+            results = retriever.search_index(query, top_k=top_k)
+        except (_requests.exceptions.ConnectionError, _requests.exceptions.Timeout) as e:
+            print(f"\n[ABORT] Embedding server unreachable during search: {e}")
+            sys.exit(1)
         elapsed = time.perf_counter() - t0
         metrics.retrieved_doc_ids.extend(r["doc_id"] for r in results)
         snippet_len = int(os.environ.get("SEARCH_SNIPPET_LEN", "500"))
         for r in results:
             if "text" in r and len(r["text"]) > snippet_len:
                 r["text"] = r["text"][:snippet_len] + "…"
+        metrics.retrieval_latency_s += elapsed
         metrics.search_calls += 1
         metrics._query_cache[query] = results
         doc_ids = [r["doc_id"] for r in results]
@@ -167,43 +180,12 @@ def build_rlm_agent(
         t0 = time.perf_counter()
         result = retriever.get_document(doc_id)
         elapsed = time.perf_counter() - t0
+        metrics.retrieval_latency_s += elapsed
         metrics.get_document_calls += 1
         print(f"    [getdoc #{metrics.get_document_calls}] {doc_id}  ({elapsed*1000:.0f}ms)")
         return result
 
     tools = [search_index, get_document]
-
-    if depth < max_depth:
-
-        def delegate(sub_question: str, sub_context: str = "") -> str:
-            """Launch an independent child agent to answer a sub-question.
-
-            Each delegate() has its own fresh retrieval session, letting you
-            investigate multiple clues without contaminating each other.
-
-            Args:
-                sub_question: The specific sub-question to investigate.
-                sub_context:  Optional extra context string for the child agent.
-            Returns:
-                The child agent's answer as a string.
-            """
-            metrics.delegation_calls += 1
-            child_rlm, _ = build_rlm_agent(
-                retriever=retriever,
-                depth=depth + 1,
-                max_depth=max_depth,
-                max_iterations=max_iterations,
-                max_search_calls=max_search_calls,
-                metrics=metrics,
-                verbose=verbose,
-            )
-            question = sub_question
-            if sub_context:
-                question = f"{sub_context}\n\n{sub_question}"
-            result = child_rlm(question=question)
-            return str(getattr(result, "answer", result))
-
-        tools.append(delegate)
 
     rlm = dspy.RLM(
         signature=BrowseCompSignature,
@@ -219,8 +201,8 @@ def run_question(
     retriever: FaissRetriever,
     question: str,
     max_depth: int = 5,
-    max_iterations: int = 25,
-    max_search_calls: int = 50,
+    max_iterations: int = 16,
+    max_search_calls: int = 35,
     verbose: bool = False,
     default_top_k: int = 10,
     gold_ids: set | None = None,

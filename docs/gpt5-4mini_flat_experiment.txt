@@ -1,0 +1,899 @@
+========================================================================
+BrowseComp+ Baseline Evaluation — RAG RLM
+Model: gpt-5.4-mini (Azure)  |  Retriever: FAISS (Qwen3-Embed-8B)
+Generated: 2026-07-05 21:45
+========================================================================
+
+Configuration
+----------------------------------------
+  Model              : gpt-5.4-mini (Azure OpenAI)
+  Embeddings         : Qwen3-Embed-8B (Tevatron pre-built, 4096-dim)
+  Retriever          : FAISS IndexFlatIP (100,195 vectors, GPU)
+  Evaluator : LLM-as-judge (gpt-5.4-mini, official BrowseComp+ GRADER_TEMPLATE)
+  Default top_k      : 10lu
+  Max iterations     : 25
+  Max depth          : 5
+  Temperature        : 1.0 (gpt-5.4-mini only supports 1.0)
+  Dataset            : Tevatron/browsecomp-plus (test split, 830 questions)
+  Questions evaluated: 400  (Q1–Q400)
+
+========================================================================
+OVERALL SUMMARY  (Q1–Q400, 400 questions)
+========================================================================
+  Accuracy           : 177/400 (44.2%)
+  Avg latency        : 56.6s
+  Avg tokens in      : 265,298
+  Avg tokens out     : 4,044
+  Avg iterations     : 10.5
+  Avg delegation calls: 0.01
+  Avg unique docs    : 78.3
+  Avg gold recall    : 0.567
+  Avg evid recall    : 0.516
+
+Failure breakdown (223 wrong):
+  Pure retrieval miss (gold_recall=0.00) : 120 questions
+  Gold found, wrong answer (recall=1.00) : 59 questions
+  Partial recall (0 < recall < 1)        : 44 questions
+
+========================================================================
+INDEX COMPARISON: Flat vs IVFSQ8  (Q1–Q20, 20 questions)
+========================================================================
+  Index type         : FAISS IndexFlatIP (exact)  vs  FAISS IVFSQ8 (GPU ANN)
+  IVFSQ8 config      : nlist=1024, nprobe=128, QT_8bit — 428 MB (vs 1.64 GB flat)
+  Offline recall@10  : Flat = 100%  |  IVFSQ8 = 99.5%  (nprobe=128)
+  Run date           : Flat ~2026-07-05  |  IVFSQ8 ~2026-07-09
+
+  Metric                  Flat (IndexFlatIP)    IVFSQ8 (GPU)
+  ------------------------------------------------------------------
+  Accuracy                9/20  (45.0%)         8/20  (40.0%)
+  Mean latency            35.2s                 63.3s
+  Median latency          22.6s                 68.5s
+  Avg tokens in           219,876               357,045
+  Avg tokens out          4,101                 5,020
+  Avg iterations          9.5                   12.4
+  Avg unique docs         —                     89.2
+  Avg gold_recall         0.475                 0.519
+  Avg evid_recall         0.516                 0.495
+
+
+========================================================================
+RERANKING SETUP
+========================================================================
+  What is reranking?
+    Standard retrieval (first stage) ranks documents by vector similarity —
+    the cosine distance between the query embedding and each document
+    embedding. This is fast but coarse: a single vector must capture the
+    full meaning of a query and a document.
+
+    A cross-encoder reranker (second stage) takes the raw query text and
+    each candidate document text and feeds them together through a
+    transformer. Because it sees both at once, it can model fine-grained
+    relevance (exact term overlap, entity matching, logical entailment)
+    that embedding similarity misses.
+
+  Pipeline used here (two-stage):
+    1. Flat FAISS (IndexFlatIP, exact) retrieves top-50 candidates by
+       embedding similarity — same index as the flat baseline.
+    2. BAAI/bge-reranker-v2-m3 (cross-encoder, ~570M params, fp16, GPU)
+       scores all 50 (query, document) pairs and re-orders them.
+    3. Top-10 reranked results are returned to the agent.
+
+  Model : BAAI/bge-reranker-v2-m3
+    - Architecture : XLM-RoBERTa-large fine-tuned for passage reranking
+    - Parameters   : ~570M (fp16 → ~1.1 GB GPU memory)
+    - Max length   : 512 tokens per (query, doc) pair
+    - Languages    : Multilingual (covers BrowseComp+ diverse sources)
+    - Output       : Single relevance logit per pair; higher = more relevant
+
+========================================================================
+THREE-WAY COMPARISON: Flat vs IVFSQ8 vs Reranking  (Q1–Q20, 20 questions)
+========================================================================
+  Flat      : FAISS IndexFlatIP (exact), GPU, 1.64 GB
+  IVFSQ8    : FAISS IVFScalarQuantizer, GPU, 428 MB, nlist=1024, nprobe=128
+  Reranking : Flat first stage (top 50) + BAAI/bge-reranker-v2-m3 (GPU),
+              cross-encoder reranks 50 candidates → returns top 10
+  Run date  : Flat ~2026-07-05  |  IVFSQ8 ~2026-07-09  |  Reranking ~2026-07-09
+
+  Metric                     Flat (exact)     IVFSQ8 (GPU)   Reranking (top50)
+  --------------------------------------------------------------------------
+  Accuracy                9/20  (45.0%)    8/20  (40.0%)     8/20  (40.0%)
+  Mean latency                     35.2s            63.3s             78.3s
+  Median latency                   22.6s            68.5s             77.8s
+  Avg iterations                     9.5             12.4              10.2
+  Avg tokens in                  219,877          357,045           248,695
+  Avg tokens out                   4,102            5,020             4,082
+  Avg gold_recall                  0.475            0.519             0.665
+  Avg evid_recall                  0.516            0.495             0.646
+
+  Notes:
+  - Accuracy differences at n=20 are within statistical noise.
+  - Reranking gold_recall (+40% vs flat, +28% vs IVFSQ8) is the standout
+    result — the cross-encoder surfaces relevant documents far more reliably.
+  - Despite better retrieval, reranking does not improve accuracy, indicating
+    the bottleneck has shifted to LLM reasoning (e.g. Q004, Q008, Q016, Q020
+    all had gold_recall=1.00 with reranking but the LLM still answered wrong).
+  - IVFSQ8 higher latency vs flat is due to more agent iterations (12.4 vs
+    9.5), not index search speed. Reranking latency increase is from the
+    reranker forward pass (~50 pairs per search call) and more unique docs
+    retrieved per question.
+  - Q013 (Rona Weerasuriya): only reranking found the gold document
+    (gold_recall=0.50) and answered correctly; flat had gold_recall=0.00.
+
+========================================================================
+COMBINED COMPARISON: Flat vs Reranking (Q1–Q40, 40 questions)
+========================================================================
+  Flat      : FAISS IndexFlatIP (exact), GPU, 1.64 GB  — from main Q1-Q400 run
+  Reranking : Flat first stage (top 50) + BAAI/bge-reranker-v2-m3 (GPU, fp16)
+
+  Metric                        Flat (exact)      Reranking (top-50→10)
+  --------------------------------------------------------------------------
+  Accuracy                   20/40  (50.0%)        18/40  (45.0%)
+  Mean latency                       91.4s                  89.5s
+  Median latency                     24.7s                  72.7s
+  Avg iterations                       9.4                   10.2
+  Avg tokens in                    218,623                252,362
+  Avg tokens out                     3,917                  3,876
+  Avg gold_recall                    0.577                  0.639
+  Avg evid_recall                    0.559                  0.561
+
+  Notes:
+  - Accuracy gap (2 questions) is within noise at n=40. Need n≥100 for significance.
+  - Reranking gold_recall is +10.7% vs flat (0.639 vs 0.577), confirming the
+    cross-encoder consistently surfaces more relevant documents.
+  - Mean latency is similar (both skewed by a single API timeout outlier each:
+    Q021=2325.9s for flat, Q027=828.6s for reranking). Median tells the real
+    story: reranking is 3× slower per question (72.7s vs 24.7s) due to the
+    reranker forward pass over 50 candidate pairs per search call.
+  - Tokens are slightly higher for reranking (+15%) because the better
+    retrieval quality leads the agent to read more unique documents.
+  - Key question: why doesn't +10% gold_recall translate to higher accuracy?
+    Looking at questions where gold_recall=1.00 but LLM still answered wrong:
+    Q004, Q005, Q008, Q016, Q020 (flat), Q021, Q028, Q030, Q032, Q037 (reranking).
+    The bottleneck is reasoning, not retrieval. The LLM finds the document but
+    fails to extract/synthesize the exact answer from it.
+
+========================================================================
+RERANKING: Q41–Q60 RESULTS  (20 questions)
+========================================================================
+  Run date : ~2026-07-10  |  Index: Flat FAISS top-50 + bge-reranker-v2-m3
+
+  Q      ✓/✗   Predicted                                Gold (short)                 Lat(s)    TokIn   TokOut  Iters  GRec  ERec
+  ----------------------------------------------------------------------------------------------------------------------------------
+  Q041  ✓     Nejib Ben Azouz                          Nejib Ben Azouz                15.2    25,453     782      3  0.50  0.20
+  Q042  ✗     Sunset in Biafra                         Sunset at Biafra               22.9    36,379   1,421      4  1.00  0.75
+  Q043  ✗     Unknown                                  Edwin Hughes Kendrick         129.4   355,421   4,909     15  0.00  0.00
+  Q044  ✗     Youngji Cho                              Ama Barbara Biney              61.2   326,622   2,852     12  0.50  0.38
+  Q045  ✓     Implicit Theories of Intelligence...     Implicit Theories...           63.7   120,399   3,556      7  1.00  1.00
+  Q046  ✗     Joël Veltman, 20th century               Maxime Gonalons, 20th Cent.. 111.1   444,989   6,761     15  1.00  1.00
+  Q047  ✓     Rudy Cox                                 Rudy Cox                       27.0    53,376   1,385      5  1.00  0.56
+  Q048  ✓     Cozens Ranch Museum                      Cozens Ranch Museum            25.6    58,897   1,222      5  1.00  0.86
+  Q049  ✓     Whitesnake                               Whitesnake                     32.4    78,312   2,682      7  0.83  0.71
+  Q050  ✓     Tina Tutkova                             Tina Tutkova                   42.5   205,964   2,383     11  0.50  0.90
+  Q051  ✗     Unknown                                  Sandie Hatch                   76.7   523,395   4,763     15  1.00  0.22
+  Q052  ✗     20th century; Spain                      19th century; Spain            22.4    46,392   1,266      5  0.50  0.40
+  Q053  ✗     Unknown                                  Mathilda Bjarnehed            132.2   368,568   5,027     15  1.00  0.71
+  Q054  ✓     Melissa Marr                             Melissa Marr                   23.1    53,889   1,327      6  1.00  0.83
+  Q055  ✗     Unknown                                  Urza Acharya                  116.0   750,951   6,821     18  0.50  0.40
+  Q056  ✗     Road Runner's Death Valley Rally          Sleepwalker                   28.1    69,464   2,094      7  0.50  0.67
+  Q057  ✗     Unknown                                  Greek of the Week             166.3   382,175   6,264     15  0.00  0.12
+  Q058  ✓     La Estrella, Argentina                   La Estrella; Argentina         34.7    75,884   2,162      6  0.67  0.60
+  Q059  ✓     Richard C. Larson                        Richard C. Larson             197.0   136,420   2,691      8  1.00  0.50
+  Q060  ✓     37 kg                                    37kg                           32.7    75,094   1,959      6  1.00  0.88
+
+  Aggregate (Q41–Q60):
+    Accuracy         : 10/20 (50.0%)
+    Mean latency     : 68.0s   (median 38.6s)
+    Avg iterations   : 9.25
+    Avg tokens in    : 209,402
+    Avg tokens out   : 3,116
+    Avg gold_recall  : 0.725
+    Avg evid_recall  : 0.585
+
+  vs flat baseline Q41–Q60 (from main run):
+    Accuracy         : 4/20  (20.0%)
+    Mean latency     : 43.9s
+    Avg iterations   : 11.5
+    Avg tokens in    : 286,950
+    Avg tokens out   : 4,532
+    Avg gold_recall  : 0.485
+    Avg evid_recall  : 0.409
+
+  Notes Q41–Q60:
+  - Reranking 50% vs flat 20% — largest accuracy gap seen so far (n=20 still noisy).
+  - Q042 ✗: reranker found the doc (gold_recall=1.00) but LLM wrote "Sunset in Biafra"
+    instead of "Sunset at Biafra" — wrong preposition, exact match failure.
+  - Q046, Q051, Q053: gold_recall=1.00 but wrong answer — reasoning bottleneck.
+  - Reranking gold_recall (0.725) substantially higher than flat (0.485) here.
+
+========================================================================
+RERANKING: Q61–Q80 RESULTS  (20 questions)
+========================================================================
+  Run date : 2026-07-10  |  Index: Flat FAISS top-50 + bge-reranker-v2-m3
+
+  Q      ✓/✗   Predicted                                Gold (short)                  Lat(s)    TokIn    TokOut  Iters  GRec  ERec
+  -----------------------------------------------------------------------------------------------------------------------------------
+  Q061  ✗     Taraji P. Henson                         Dave Chappelle                  47.3   134,048   2,883      8  0.00  0.00
+  Q062  ✓     Equipo de Arquitectura                   Equipo de Arquitectura          33.5    52,100   1,711      5  0.75  0.75
+  Q063  ✓     Eno Ebele Jerry                          Eno Ebele Jerry                 20.5    30,986   1,438      4  0.80  0.89
+  Q064  ✗     Unknown                                  Lyric Geography                301.2   960,956   9,215     21  0.00  0.17
+  Q065  ✗     Hugo J. Woerdeman                        Vera Nünning                    78.1   225,327   5,263     12  0.00  0.10
+  Q066  ✓     Sealed                                   Sealed                          38.7   101,180   2,256      7  0.75  0.50
+  Q067  ✗     Unknown                                  kindergarten                    99.8   386,659   6,114     15  0.00  0.12
+  Q068  ✗     Unknown                                  Jim Hibbert.                   110.7   464,972   7,240     16  0.00  0.33
+  Q069  ✗     Howard Hesseman                          Edgar McLean Stevenson Jr.      32.9   119,668   2,300      8  0.00  0.00
+  Q070  ✗     D'Urban                                  Motshekga                       96.5   551,898   5,333     15  0.50  0.50
+  Q071  ✗     Unknown                                  27                             115.2   410,574   5,225     15  0.00  0.25
+  Q072  ✗     Allyson Felix                            Kevin Anderson                 114.3   250,886   5,353     11  0.25  0.22
+  Q073  ✗     4                                        9                               47.6   123,123   3,649      7  0.00  0.25
+  Q074  ✓     The Little Mermaid                       The Little Mermaid              43.0    92,979   2,306      7  0.50  0.67
+  Q075  ✓     Thomas Ngomba                            Thomas Ngomba                   13.4    26,196     906      3  1.00  0.40
+  Q076  ✓     Ian Solomon                              Ian Solomon                     84.3   285,782   5,173     12  0.75  0.75
+  Q077  ✓     Manly P. Hall                            Manly Hall                      27.2    27,765   1,502      4  0.86  0.67
+  Q078  ✗     Unknown                                  Fall of the Queen Bean         167.2 1,078,040   9,298     24  1.00  0.62
+  Q079  ✗     Opium: How an Ancient Flower...          In the Arms of Morpheus...      77.3   110,075   2,813      7  1.00  0.67
+  Q080  ✗     Gabrielle Zevin                          J.K. Rowling                    19.7    69,330   1,010      7  0.00  0.00
+
+  Aggregate (Q61–Q80):
+    Accuracy         : 7/20 (35.0%)
+    Mean latency     : 78.4s   (median 67.7s)
+    Avg iterations   : 10.35
+    Avg tokens in    : 275,127
+    Avg tokens out   : 4,049
+    Avg gold_recall  : 0.408
+    Avg evid_recall  : 0.393
+
+  Notes Q61–Q80:
+  - Q064: 301.2s, 21 iters, gold_recall=0.00 — docs never found (master's thesis about
+    an obscure band, nothing in corpus).
+  - Q078: gold_recall=1.00, 24 iters — right docs retrieved, reasoning failed.
+  - Q079: gold_recall=1.00 — retrieved correct docs but chose wrong opium/morphine book.
+  - Weak batch for reranking (35% vs 50% in Q41–Q60); pulls cumulative back down.
+
+========================================================================
+COMBINED COMPARISON: Flat vs Reranking (Q1–Q80, 80 questions)
+========================================================================
+  Flat      : from main Q1–Q400 run  |  Reranking: Q1–Q20 + Q21–Q40 + Q41–Q60 + Q61–Q80
+
+  Batch breakdown:
+  Batch        Flat        Reranking
+  Q01–Q20      9/20 (45%)   8/20 (40%)
+  Q21–Q40     11/20 (55%)  10/20 (50%)
+  Q41–Q60      4/20 (20%)  10/20 (50%)  ← reranking peak
+  Q61–Q80     12/20 (60%)   7/20 (35%)  ← flat peak (from main run)
+  ─────────────────────────────────────
+  Q01–Q80     36/80 (45%)  35/80 (43.8%)
+
+  Metric                        Flat (exact)      Reranking (top-50→10)
+  --------------------------------------------------------------------------
+  Accuracy                   36/80  (45.0%)        35/80  (43.8%)
+  Mean latency (excl. Q021)          ~40s                   80s
+  Avg iterations                      10.3                   10.1
+  Avg tokens in                    ~253,000               ~247,000
+  Avg tokens out                     ~4,100                 ~3,800
+  Avg gold_recall                    ~0.54                  ~0.59
+
+  Notes:
+  - At n=80, flat (45.0%) and reranking (43.8%) are essentially tied — 1.2pp gap
+    is well within batch-to-batch noise (single batch swings of ±15pp observed).
+  - Q41–Q60 strongly favoured reranking (50% vs 20%); Q61–Q80 strongly favoured
+    flat (60% vs 35%) — these cancel out, confirming high variance at n=20.
+  - Reranking ~2× slower per question and uses ~2× more compute on the GPU server.
+  - Need n≥200 for a stable accuracy estimate; offline retrieval eval (n=830) still
+    shows flat > reranking at every K cutoff.
+  * Q021 flat: 2325.9s API hang excluded from latency calculation.
+
+========================================================================
+RERANKING: Q81–Q100 RESULTS  (20 questions)
+========================================================================
+  Run date : 2026-07-10  |  Index: Flat FAISS top-50 + bge-reranker-v2-m3
+
+  Q      ✓/✗   Predicted                                Gold (short)                  Lat(s)    TokIn    TokOut  Iters  GRec  ERec
+  -----------------------------------------------------------------------------------------------------------------------------------
+  Q081  ✗     Michigan Central Station                 1798 Monument                  115.7   400,734   7,149     15  0.00  0.29
+  Q082  ✓     Stanford University                      Stanford University             21.6    30,717   1,297      4  1.00  0.83
+  Q083  ✓     Russell David Lyons                      Russell David Lyons             27.7    47,549   1,835      5  1.00  1.00
+  Q084  ✗     Unknown                                  Mando                          113.3   516,663   8,239     16  0.33  0.38
+  Q085  ✗     Seth Rollins                             Chris Jericho                   55.0   261,974   3,591     12  0.67  0.60
+  Q086  ✗     a small village with a big history       Little Lovely                   15.0    19,731     937      4  0.00  0.60
+  Q087  ✓     Osama Heikal                             Osama Heikal                    31.7    56,486   1,989      5  1.00  1.00
+  Q088  ✓     June                                     June                            56.9   139,876   3,062      9  1.00  1.00
+  Q089  ✗     Christopher Columbus                     Edward Winslow                 182.3   339,669   5,408     14  0.50  0.67
+  Q090  ✗     Goro                                     Tak                             52.8   104,895   2,193      8  0.50  0.50
+  Q091  ✓     Jun                                      Jun                              8.8    22,017     490      3  0.17  0.17
+  Q092  ✓     Kwabena Yeboah                           Kwabena Yeboah                  16.0    46,013   1,015      5  0.83  0.83
+  Q093  ✗     King Edward VIII                         Queen Marie of Romania          20.2    19,126     949      3  0.33  0.33
+  Q094  ✓     Chip Deffaa                              Chip Deffaa                     18.5    50,404   1,105      5  0.33  0.38
+  Q095  ✗     Association of leisure-time...           Psychedelics                   133.9   466,836   6,239     13  0.00  0.00
+  Q096  ✗     Włodzimierz Opoka                        Jacek Rojowski                  62.8   140,613   3,017      8  1.00  1.00
+  Q097  ✓     The Dial                                 The Dial                        18.8    48,540     897      5  0.57  0.56
+  Q098  ✗     Unknown                                  David Kermani                   96.3   464,682   5,445     15  0.50  0.29
+  Q099  ✓     Dead on Site                             Dead on Site                    43.1   122,408   2,531      8  1.00  1.00
+  Q100  ✗     Unknown                                  Pragyan Ojha                   115.0   591,799   8,744     15  0.60  0.60
+
+  Aggregate (Q81–Q100):
+    Accuracy         : 9/20 (45.0%)
+    Mean latency     : 60.3s   (median 44.1s)
+    Avg iterations   : 8.85
+    Avg tokens in    : 194,537
+    Avg tokens out   : 3,307
+    Avg gold_recall  : 0.567
+    Avg evid_recall  : 0.602
+
+  Notes Q81–Q100:
+  - Q096: gold_recall=1.00 + evid_recall=1.00 — perfect retrieval, wrong author chosen
+    anyway; pure reasoning failure.
+  - Q091: gold_recall=0.17 yet correct answer — inferred from minimal context.
+  - Faster batch (60.3s mean) with fewer tokens (194K) — fewer long timeouts.
+
+========================================================================
+COMBINED COMPARISON: Flat vs Reranking (Q1–Q100, 100 questions)
+========================================================================
+  Flat      : from main Q1–Q400 run  |  Reranking: five 20-question batches
+
+  Batch breakdown:
+  Batch        Flat (main run)   Reranking
+  Q01–Q20       9/20  (45%)       8/20  (40%)
+  Q21–Q40      11/20  (55%)      10/20  (50%)
+  Q41–Q60       4/20  (20%)      10/20  (50%)  ← reranking peak
+  Q61–Q80      12/20  (60%)       7/20  (35%)  ← flat peak
+  Q81–Q100     10/20  (50%)       9/20  (45%)
+  ──────────────────────────────────────────
+  Q01–Q100     46/100 (46%)      44/100 (44%)
+
+  Metric                        Flat (exact)      Reranking (top-50→10)
+  --------------------------------------------------------------------------
+  Accuracy                   46/100 (46.0%)        44/100 (44.0%)
+  Mean latency (excl. Q021)          ~40s                   ~75s
+  Avg gold_recall                    ~0.55                  ~0.60
+  Avg iterations                     ~10.3                  ~9.8
+
+  Notes:
+  - At n=100, flat (46%) leads reranking (44%) by 2pp — statistically indistinguishable.
+  - Reranking is ~2× slower with no measurable accuracy benefit over 100 questions.
+  - Reranking gold_recall is slightly higher (~0.60 vs ~0.55) but doesn't convert to
+    accuracy — reasoning bottleneck dominates at this scale.
+  - Offline retrieval eval (n=830) confirms flat > reranking in raw retrieval quality.
+
+========================================================================
+OFFLINE RETRIEVAL EVALUATION: Flat vs Reranking (n=830, single query)
+========================================================================
+  Method   : Single raw question → /search → measure overlap with gold docs
+  No LLM   : Zero Azure API calls — pure retrieval quality measurement
+  Run date : ~2026-07-09  |  Both runs: Q1–Q830, max-k=50
+
+  Flat     : FAISS IndexFlatIP, top-K returned directly
+  Reranking: FAISS top-50 candidates → bge-reranker-v2-m3 → top-K returned
+             (for top_k=50 requests the reranker fetches 250 FAISS candidates)
+
+  K       Flat GoldR@K   Reranking GoldR@K   Flat EvidR@K   Rerank EvidR@K
+  ──────  ────────────   ─────────────────   ────────────   ──────────────
+   1          0.072           0.059              0.054           0.038
+   3          0.143           0.096              0.115           0.076
+   5          0.187           0.134              0.148           0.106
+  10          0.258           0.194              0.205           0.149
+  20          0.337           0.265              0.280           0.207
+  50          0.450           0.378              0.386           0.311
+
+  Gold NDCG@10  : Flat=0.194   Reranking=0.142
+  Gold MRR      : Flat=0.238   Reranking=0.188
+  Evid MRR      : Flat=0.363   Reranking=0.287
+  Avg latency   : Flat=0.16s   Reranking=3.14s  (20× slower)
+
+  IVFSQ8 (nlist=1024, nprobe=128, 428 MB):
+  K       Flat GoldR@K   IVFSQ8 GoldR@K   Reranking GoldR@K
+  ──────  ────────────   ──────────────   ─────────────────
+   1          0.072           0.072            0.059
+   3          0.143           0.143            0.096
+   5          0.187           0.186            0.134
+  10          0.258           0.256            0.194
+  20          0.337           0.333            0.265
+  50          0.450           0.445            0.378
+
+  Gold MRR  : Flat=0.238   IVFSQ8=0.237   Reranking=0.188
+  Avg lat   : Flat=0.16s   IVFSQ8=0.16s   Reranking=3.14s
+
+  Result: Flat ≈ IVFSQ8 >> Reranking. Flat beats reranking at every K by
+  19–49%. IVFSQ8 is within rounding error of flat at all K values.
+
+  Why reranking hurts on BrowseComp+:
+  1. Cross-encoder max_length=512 tokens truncates long multi-constraint
+     questions, discarding the exact constraints that identify the gold doc.
+  2. bge-reranker-v2-m3 was trained on standard IR (short factoid queries,
+     Wikipedia passages) — not the deliberate obfuscation of BrowseComp+.
+  3. Qwen3-Embed-8B is already a strong 8B embedding model; the cross-encoder
+     cannot improve on its dot-product ranking for this domain.
+
+  Reconciling with earlier agent-eval finding:
+  - Agent eval Q1–Q40 showed reranking gold_recall=0.639 > flat=0.577.
+  - That was noise: n=40 is too small for a reliable comparison.
+  - The n=830 offline eval is the definitive measurement.
+  - Both flat and reranking achieve ~44% end-to-end accuracy, confirming
+    that retrieval quality is not the bottleneck — reasoning is.
+
+  Note on agent vs single-query recall:
+  - Single query: flat Recall@10=0.258 vs agent flat gold_recall=0.567
+  - The agent's ~10.5 avg iterations with reformulated queries improves
+    recall by 2.2× over a single query. Query reformulation matters more
+    than reranking for this benchmark.
+
+  Conclusion: Drop reranking. Stick with FAISS IndexFlatIP. Focus
+  improvements on reasoning quality (prompt engineering, better LLM).
+
+========================================================================
+NEXT STEPS
+========================================================================
+  1. Continue flat baseline Q401-Q830 (main eval)
+  2. Delegation eval Q66+
+  3. Focus on reasoning improvements (reranking is not the bottleneck)
+
+========================================================================
+GPT-5 PILOT EVAL: Q1–Q21  (ismail-gpt-5, reasoning_effort=low)
+========================================================================
+  Model              : ismail-gpt-5 (Azure, thinking/reasoning model)
+  Retriever          : FAISS IndexFlatIP (same as flat baseline)
+  reasoning_effort   : low  (caps internal thinking tokens)
+  Max tokens         : 12,000
+  Snippet length     : 500 chars  (vs 2000 for gpt-5.4-mini)
+  Max iterations     : 25 (default)
+  Max search calls   : 50 (default, no cap)
+  Judge model        : gpt-5.4-mini (AZURE_OPENAI_JUDGE_MODEL, separate from agent)
+  Run date           : 2026-07-11
+
+  Key lessons from this run:
+  - SSH tunnel drop → silent search=0 → model answers from memory (invalidates results)
+  - --max-iters 5 → reasoning burns all iterations before first search call
+  - --max-search 15 → cuts model off mid-investigation
+  - AZURE_OPENAI_JUDGE_MODEL added to .env so judge always stays on gpt-5.4-mini
+
+  SUMMARY (Q1–Q21, 21 questions):
+  ────────────────────────────────────────────────────────────────────────
+  Accuracy          : 14/21 (66.7%)   [15/21 = 71.4% counting Q18*]
+  Avg latency       : 169.3s          [median ~66s; Q12=1226s outlier]
+  Avg tokens in     : 163,566
+  Avg tokens out    : 10,163
+  Avg iterations    : 9.5
+  Avg search calls  : 18.3
+  Avg getdoc calls  : 2.2
+  Avg delegations   : 0.33
+  Avg unique docs   : 47.6
+  Avg gold recall   : 0.698
+  Avg evid recall   : 0.672
+
+  *Q18: predicted 'JadaL', gold 'Jadal' — capitalisation-only diff, judge marked wrong.
+
+  vs flat baseline gpt-5.4-mini Q1–Q21:
+  Accuracy     : 10/21 (47.6%)
+  Avg latency  :  37.0s
+  Avg tok in   : 210,694
+  Avg tok out  :  3,871
+  Avg iters    :   9.0
+
+  PER-QUESTION RESULTS:
+  ────────────────────────────────────────────────────────────────────────
+  Q      ✓/✗   Predicted                                Gold                         Lat(s)    TokIn    TokOut  Iters  Search  GetDoc  GRec   ERec
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Q001  ✓     Queen Arwa University                    Queen Arwa University           51.6    32,540    3,644      5       5       4  1.00   0.83
+  Q002  ✓     Laura Lojo-Rodríguez                     Laura Lojo-Rodriguez           166.9   259,707   13,237     16      35       5  1.00   0.78
+  Q003  ✓     Vakkorama                                Vakkorama                       18.5    12,912    1,130      3       1       1  1.00   0.83
+  Q004  ✗     General assistant                        Secretary                      136.1   256,270    9,889     14      50       1  0.00   0.80
+  Q005  ✗     White                                    Red                            183.4   436,605   12,820     20      50       2  1.00   1.00
+  Q006  ✓     Georgia Hirst                            Georgia Hirst                   87.4    26,142    6,218      4       2       3  0.83   0.86
+  Q007  ✗     Jerusalem                                Boston                         277.3   108,334   23,914     10      46       4  0.00   0.00
+  Q008  ✗     Unknown                                  The Dorset Culture of the..    426.6   463,057   33,677     13      50       0  0.00   0.17
+  Q009  ✓     21                                       21                              16.2    12,100    1,009      3       1       1  0.33   0.25
+  Q010  ✓     Raheem Sterling                          Raheem Sterling                 21.3    13,369    1,383      3       1       1  0.50   0.33
+  Q011  ✓     Electra                                  Electra                         32.9    15,502    2,705      3       2       1  0.33   0.33
+  Q012  ✓     Jacqueline Georgette Cantrelle           Jacqueline Georgette Cantrelle 1226.2  227,611   29,569     15      26       0  1.00   0.60
+  Q013  ✓     Rona Weerasuriya                         Rona Weerasuriya                58.6    91,365    4,564      7      17       1  1.00   1.00
+  Q014  ✓     Kiran Shah                               Kiran Shah                      91.9    59,597    7,392      6      15       0  0.67   0.67
+  Q015  ✗     Ama Serwah Genfi                         Emmanuel Kwesi Danso Arthur.. 141.4   330,617   10,235     20      15       0  0.00   0.00
+  Q016  ✓     Taj-ul-Masajid                           Taj-ul-Masajid                 221.2   180,705   21,367     12      15      11  1.00   1.00
+  Q017  ✓     "Manos"                                  "Manos"                         62.6    37,337    4,823      7       4       3  1.00   1.00
+  Q018  ✗*    JadaL                                    Jadal                           60.6    14,258    4,833      3       3       4  1.00   1.00
+  Q019  ✓     Oral creatine supplementation: A pot..   Oral creatine supplementat..    65.3    56,946    5,277      6       5       2  1.00   1.00
+  Q020  ✓     29/02                                    29/02                           40.4    21,482    3,307      4       5       2  1.00   0.67
+  Q021  ✗     Unknown                                  1419                           169.2   778,436   12,440     25      37       0  1.00   1.00
+
+========================================================================
+GPT-5 FLAT vs IVFSQ8 (nprobe=64): Q1–Q20  (ismail-gpt-5, reasoning_effort=low)
+========================================================================
+  Run date   : 2026-07-11
+  Both runs  : same model, same settings — only FAISS index differs
+  Flat       : IndexFlatIP (exact), 1.64 GB
+  IVFSQ8     : IVFScalarQuantizer nprobe=64 (was nprobe=128 → CUDA crash), 428 MB
+  Note       : IVFSQ8 run was split (Q1–Q11 then Q12–Q20) due to server CUDA crash at nprobe=128
+
+  AGGREGATE COMPARISON:
+  ──────────────────────────────────────────────────────────────────────
+  Metric                     Flat          IVFSQ8 (nprobe=64)
+  ──────────────────────────────────────────────────────────────────────
+  Accuracy               14/20 (70%)       14/20 (70%)
+  Avg latency               206s              217s
+  Avg tokens in             132K              198K
+  Avg search calls          17.4              25.6
+  Avg iterations             8.4               8.3
+  Avg gold recall           0.71              0.72
+  ──────────────────────────────────────────────────────────────────────
+
+  PER-QUESTION COMPARISON:
+  Q    Flat  IVFSQ8  | Flat Lat  IVF Lat | Flat TokIn  IVF TokIn | Flat Srch  IVF Srch | Flat Iters  IVF Iters | Flat GRec  IVF GRec
+  ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Q01   ✓     ✓      |     52s      27s  |      32K       22K    |       5        6     |      5         4      |   1.00      1.00
+  Q02   ✓     ✓      |    167s     104s  |     260K       92K    |      35       37     |     16         8      |   1.00      1.00
+  Q03   ✓     ✓      |     19s      21s  |      13K       16K    |       1        2     |      3         3      |   1.00      1.00
+  Q04   ✗    [✓]     |    136s      69s  |     256K       83K    |      50       17     |     14         8      |   0.00      1.00
+  Q05   ✗     ✗      |    183s     157s  |     437K      365K    |      50       50     |     20        14      |   1.00      1.00
+  Q06   ✓     ✓      |     87s      68s  |      26K        8K    |       2        2     |      4         2      |   0.83      1.00
+  Q07   ✗     ✗      |    277s     175s  |     108K      141K    |      46       50     |     10        10      |   0.00      0.00
+  Q08   ✗    [✓]     |    427s     241s  |     463K      335K    |      50       39     |     13        18      |   0.00      1.00
+  Q09   ✓     ✓      |     16s      16s  |      12K       13K    |       1        1     |      3         3      |   0.33      0.33
+  Q10   ✓     ✓      |     21s      34s  |      13K       21K    |       1        2     |      3         4      |   0.50      1.00
+  Q11   ✓     ✓      |     33s      23s  |      16K       12K    |       2        1     |      3         3      |   0.33      0.33
+  Q12   ✓    [✗]     |   1226s     764s  |     228K      302K    |      26       50     |     15         8      |   1.00      0.50
+  Q13   ✓     ✓      |     59s      98s  |      91K      108K    |      17       22     |      7         9      |   1.00      1.00
+  Q14   ✓     ✓      |     92s     526s  |      60K      373K    |      15       50     |      6        14      |   0.67      0.00
+  Q15   ✗     ✗      |    141s      85s  |     331K      181K    |      15       17     |     20        15      |   0.00      0.00
+  Q16   ✓     ✓      |    221s     996s  |     181K      464K    |      15       50     |     12        13      |   1.00      1.00
+  Q17   ✓     ✓      |     63s      38s  |      37K       18K    |       4        1     |      7         4      |   1.00      1.00
+  Q18  ✗*    ✓*      |     61s      21s  |      14K        8K    |       3        1     |      3         2      |   1.00      1.00
+  Q19   ✓    [✗]     |     65s     160s  |      57K      320K    |       5       50     |      6        16      |   1.00      1.00
+  Q20   ✓     ✓      |     40s      46s  |      21K       35K    |       5       12     |      4         5      |   1.00      1.00
+
+  [✓] = flipped correct vs flat   [✗] = flipped wrong vs flat   * = capitalisation-only judge error
+
+  Notes:
+  - Accuracy identical at n=20 (70% both) — difference within noise.
+  - IVFSQ8 hits 50-search cap more often (Q5,Q7,Q12,Q14,Q16,Q19) → higher token usage.
+  - Q16 IVFSQ8 outlier (996s): hit search cap and kept looping despite RuntimeError.
+  - Q14 IVFSQ8 gold_recall=0.00 but still answered correctly — inferred from context.
+  - IVFSQ8 nprobe=128 caused CUDA error 1 (invalid argument) on the GPU server — reduced to 64.
+  - At 100K docs, flat vs IVFSQ8 search speed difference is negligible (network RTT dominates).
+  - Conclusion: IVFSQ8 offers no accuracy or speed benefit at this corpus size. Stick with flat.
+
+========================================================================
+GPT-5 FLAT vs HNSW (CPU): Q1–Q20  (ismail-gpt-5, reasoning_effort=low)
+========================================================================
+  Run date   : 2026-07-11
+  Flat       : IndexFlatIP (exact), GPU, 1.64 GB  — limits: max_search=35, max_iters=16
+  HNSW       : IndexHNSWFlat (CPU), M=32, efConstruction=200, efSearch=128
+               Runs on CPU cores of GPU server; GPU used only for embedding model.
+  Note       : Q11 not captured in HNSW run (buffering issue on first question of batch).
+
+  AGGREGATE COMPARISON (Q1–Q20, excluding Q11 for HNSW):
+  ──────────────────────────────────────────────────────────────────────
+  Metric                     Flat          HNSW (CPU, efSearch=128)
+  ──────────────────────────────────────────────────────────────────────
+  Accuracy               14/20 (70%)       10/19 (53%)
+  Avg latency               169s              122s
+  Avg retrieval lat          N/A              2.9s
+  Avg search calls          17.4             15.8
+  Avg iterations             8.4              8.0
+  Avg gold recall           0.71             0.61
+  ──────────────────────────────────────────────────────────────────────
+
+  PER-QUESTION COMPARISON:
+  Q    Flat  HNSW  | Flat Srch  HNSW Srch | Flat GRec  HNSW GRec | Notes
+  ──────────────────────────────────────────────────────────────────────────────
+  Q01   ✓     ✓   |      5        5       |   1.00      1.00      |
+  Q02   ✓     ✓   |     35       29       |   1.00      1.00      |
+  Q03   ✓     ✓   |      1        1       |   1.00      1.00      |
+  Q04   ✗     ✗   |     50       35(cap)  |   0.00      0.00      |
+  Q05   ✗     ✗   |     50        1       |   1.00      1.00      | HNSW model gave up early
+  Q06   ✓     ✓   |      2        1       |   0.83      0.83      |
+  Q07   ✗     ✗   |     46       35(cap)  |   0.00      0.00      |
+  Q08   ✗     ✗   |     50       35(cap)  |   0.00      0.00      |
+  Q09   ✓     ✓   |      1        1       |   0.33      0.67      |
+  Q10   ✓     ✓   |      1        2       |   0.50      1.00      |
+  Q11   ✓     —   |      2        —       |   0.33      —         | HNSW Q11 not captured
+  Q12   ✓     ✗   |     26       35(cap)  |   1.00      0.50      | HNSW missed gold docs
+  Q13   ✓     ✓   |     17        9       |   1.00      0.50      |
+  Q14   ✓     ✓   |     15       35(cap)  |   0.67      1.00      |
+  Q15   ✗     ✗   |     15       29       |   0.00      0.00      |
+  Q16   ✓     ✗   |     15       35(cap)  |   1.00      1.00      | Found gold but wrong answer
+  Q17   ✓     ✗   |      4       14       |   1.00      0.00      | HNSW failed to retrieve gold doc
+  Q18  ✗*    ✗*   |      3        2       |   1.00      0.86      | Judge error (JadaL vs Jadal)
+  Q19   ✓     ✓   |      5        9       |   1.00      1.00      |
+  Q20   ✓     ✓   |      5        3       |   1.00      1.00      |
+
+  * = capitalisation-only judge error (both runs affected equally)
+
+  REGRESSIONS (flat ✓ → HNSW ✗):
+    Q12: HNSW gold_recall=0.50 vs flat 1.00 — HNSW missed half the gold documents
+    Q16: HNSW gold_recall=1.00 but wrong answer — model variance / reasoning error
+    Q17: HNSW gold_recall=0.00 vs flat 1.00 — HNSW completely failed to retrieve gold doc
+
+  RETRIEVAL LATENCY BREAKDOWN (HNSW runs, new metric):
+    Avg retrieval latency per question : 2.9s
+    Avg total latency per question     : 122s
+    Retrieval as % of total latency    : ~2.4%
+    → LLM reasoning accounts for ~97.6% of end-to-end latency.
+    → Search time (HNSW CPU ~2ms vs flat GPU ~0.1ms) is negligible vs network RTT (~150ms).
+
+  Notes:
+  - HNSW recall is measurably lower than flat: 3 regressions (Q12, Q16, Q17) at n=20.
+  - Q17 is the clearest failure: flat found the gold doc in 4 searches; HNSW searched
+    14 times and never retrieved it (gold_recall=0.00).
+  - HNSW offers no speed advantage at 100K docs (RTT dominates; CPU search ~2ms vs GPU ~0.1ms).
+  - HNSW uses no VRAM for the index (frees GPU memory for embeddings/reranker), but at the
+    cost of lower recall quality with M=32, efSearch=128 for 4096-dim vectors.
+  - Conclusion: flat GPU index is strictly better than HNSW CPU at this scale. Stick with flat.
+
+========================================================================
+GPT-5 FLAT: New Limits (max-search=35, max-iters=16) vs Pilot — Q1–Q20
+========================================================================
+  Model         : ismail-gpt-5 (Azure, reasoning_effort=low)
+  Index         : FAISS IndexFlatIP (GPU), same as pilot
+  New limits    : max-search=35, max-iters=16  (pilot was 50/25)
+  Judge fix     : heuristic pre-check added (catches capitalisation-only diffs like JadaL/Jadal)
+  Run dates     : 2026-07-11 (Q1–Q10: run_q1_q10_gpt5_flat_new, Q11–Q20: run_q11_q20_gpt5_flat_new)
+
+  AGGREGATE COMPARISON (Q1–Q20):
+  ──────────────────────────────────────────────────────────────────────
+  Metric                     Pilot (50/25)     New limits (35/16)
+  ──────────────────────────────────────────────────────────────────────
+  Accuracy               14/20 (70%)           11/20 (55%)  [12/20* with judge fix]
+  Avg latency               169s                  114s
+  Avg retrieval lat          N/A                   2.9s
+  Avg tokens in             133k                  104k
+  Avg tokens out             10k                   10k
+  Avg search calls          17.4                  17.3
+  Avg iterations             8.7                   7.2
+  Avg getdoc calls           2.2                   1.3
+  Avg gold recall           0.58                  0.69
+  ──────────────────────────────────────────────────────────────────────
+  * Q18 predicted 'JadaL', gold 'Jadal' — capitalisation only, fixed by judge pre-check
+
+  PER-QUESTION COMPARISON:
+  Q    Pilot  New   | Srch pilot→new | Iters pilot→new | TokIn pilot→new  | GRec pilot→new | Notes
+  ──────────────────────────────────────────────────────────────────────────────────────────────────
+  Q01   ✓      ✓   |    5  →  28    |    5  →   6     |   33k →  50k     |  1.00 → 1.00   |
+  Q02   ✓      ✓   |   35  →  23    |   16  →  11     |  260k → 154k     |  1.00 → 1.00   | New more efficient
+  Q03   ✓      ✓   |    1  →   1    |    3  →   3     |   13k →  15k     |  1.00 → 1.00   |
+  Q04   ✗      ✗   |   50  →  35cap |   14  →   9     |  256k → 114k     |  0.00 → 0.00   | Gold doc not found
+  Q05   ✗      ✗   |   50  →  35cap |   20  →  16cap  |  437k → 463k     |  1.00 → 1.00   | Found gold, wrong answer
+  Q06   ✓      ✓   |    2  →   1    |    4  →   2     |   26k →   8k     |  0.83 → 0.67   | New much cheaper
+  Q07   ✗      ✗   |   46  →  35cap |   10  →  10     |  108k → 124k     |  0.00 → 0.00   | Gold doc not found
+  Q08   ✗      ✗   |   50  →  35cap |   13  →  16cap  |  463k → 337k     |  0.00 → 0.00   | Gold doc not found
+  Q09   ✓      ✓   |    1  →   1    |    3  →   3     |   12k →  12k     |  0.33 → 0.67   |
+  Q10   ✓      ✓   |    1  →   1    |    3  →   3     |   13k →  13k     |  0.50 → 1.00   |
+  Q11   ✓      ✓   |    2  →   2    |    3  →   3     |   16k →  12k     |  0.33 → 1.00   |
+  Q12   ✓      ✗   |   26  →  35cap |   15  →   9     |  228k → 122k     |  1.00 → 1.00   | Found gold, lost context at cap
+  Q13   ✓      ✓   |   17  →  11    |    7  →   7     |   91k →  56k     |  1.00 → 0.50   | New more efficient
+  Q14   ✓      ✓   |   15  →  33    |    6  →  13     |   60k → 238k     |  0.67 → 1.00   | New used more searches but still correct
+  Q15   ✗      ✗   |   15  →  25    |   20  →  12     |  331k → 226k     |  0.00 → 0.00   | Gold doc not found
+  Q16   ✓      ✓   |   15  →   1    |   12  →   4     |  181k →  26k     |  1.00 → 1.00   | New dramatically cheaper
+  Q17   ✓      ✗   |    4  →   1    |    7  →   3     |   37k →  11k     |  1.00 → 1.00   | Found gold, wrong quote (non-determinism)
+  Q18  ✗*     ✗*   |    3  →   1    |    3  →   2     |   14k →   7k     |  1.00 → 1.00   | Judge capitalisation error (both runs)
+  Q19   ✓      ✗   |    5  →  35cap |    6  →   7     |   57k →  65k     |  1.00 → 0.00   | New failed to retrieve gold doc
+  Q20   ✓      ✓   |    5  →   6    |    4  →   5     |   21k →  23k     |  1.00 → 1.00   |
+
+  REGRESSIONS (pilot ✓ → new ✗):
+    Q12: Hit 35-search cap; gold docs found (GRec=1.00) but model lost context → garbled response
+    Q17: Gold doc found in 1 search but model extracted wrong quote — pure non-determinism
+    Q19: Failed to retrieve gold doc (GRec=0.00 vs pilot 1.00) — different search strategy hit cap
+
+  OBSERVATIONS:
+  - Token efficiency improved: avg tok-in 133k→104k (-22%), driven by easy questions (Q6, Q16)
+  - Gold recall improved: 0.58→0.69 — the model finds gold docs more often with new limits
+  - Hard questions (Q4, Q7, Q8, Q15): same outcome regardless of limits; gold docs not found
+  - Q12 regression is limit-induced: pilot used 26 searches and succeeded; new cap at 35 but
+    model went down a worse search path and hit the cap with context full of noise
+  - Q17 regression is non-determinism: same gold doc found, different answer extracted
+  - Q19 regression: pilot found gold doc in 5 searches; new run tried 35 different queries,
+    none retrieved it (different session, different random search path)
+  - Conclusion: new limits (35/16) save ~20% tokens and ~33% latency at the cost of 3 regressions.
+    The regressions are partially explained by cap (Q12, Q19) and partially by model variance (Q17).
+
+========================================================================
+GPT-5 FLAT (35/16) — Q21–Q40
+========================================================================
+  Model    : ismail-gpt-5 (Azure, reasoning_effort=low)
+  Index    : FAISS IndexFlatIP (GPU)
+  Limits   : max-search=35, max-iters=16
+  Run date : 2026-07-11  (run_q21_q40_gpt5_flat_new)
+
+  AGGREGATE:
+  Accuracy: 15/20 (75%)  |  Avg lat: 145s  |  Avg tok-in: 79k  |  Avg tok-out: 8.6k
+  Avg search: 13.0  |  Avg iters: 7.1  |  Avg gold recall: 0.77
+
+  Q     ✓/✗  | Search  Iters | TokIn  TokOut |  Lat(s) | GRec  | Notes
+  ───────────────────────────────────────────────────────────────────────────
+  Q021   ✗   |  35cap    12  | 202k    12k   |   173s  | 1.00  | Wrong score (1550 vs 1419)
+  Q022   ✗   |  35cap     9  | 129k    13k   |   154s  | 0.00  | Gold doc not found
+  Q023   ✓   |    9       8  |  70k     6k   |    87s  | 1.00  |
+  Q024   ✗   |   13      13  | 164k    15k   |   168s  | 0.67  | Wrong answer despite partial gold
+  Q025   ✓   |    1       3  |  12k     3k   |    31s  | 0.33  |
+  Q026   ✓   |    6       5  |  38k     5k   |    77s  | 1.00  |
+  Q027   ✓   |   12       8  |  77k     8k   |   104s  | 1.00  |
+  Q028   ✓   |    3       4  |  17k     4k   |    53s  | 1.00  |
+  Q029   ✗   |  35cap    11  | 152k    15k   |   169s  | 0.00  | Gold doc not found at cap
+  Q030   ✓   |    4       5  |  30k     4k   |    58s  | 1.00  |
+  Q031   ✓   |   11       5  |  41k    15k   |   118s  | 1.00  |
+  Q032   ✓   |    3       5  |  28k     3k   |   969s  | 1.00  | Correct but 969s LLM call (slow Azure)
+  Q033   ✓   |   14       6  |  56k     5k   |    56s  | 1.00  |
+  Q034   ✓   |    9       6  |  46k     8k   |   105s  | 0.83  |
+  Q035   ✓   |    5       3  |  18k     3k   |    41s  | 0.50  |
+  Q036   ✓   |    3       3  |  13k     3k   |    36s  | 0.50  |
+  Q037   ✗   |  35cap    11  | 293k    30k   |   284s  | 1.00  | Found gold, wrong 5-word description
+  Q038   ✓   |    7       7  |  45k     3k   |    33s  | 0.50  |
+  Q039   ✓   |    8      10  |  92k     6k   |    78s  | 1.00  |
+  Q040   ✓   |   12       7  |  67k     9k   |   106s  | 1.00  |
+
+========================================================================
+GPT-5 IVFSQ8 (35/16) — Q22–Q40
+========================================================================
+  Model    : ismail-gpt-5 (Azure, reasoning_effort=low)
+  Index    : FAISS IVFSQ8 (GPU, nlist=1024, nprobe=64), 428 MB
+  Limits   : max-search=35, max-iters=16
+  Run date : 2026-07-11  (run_q22_q40_gpt5_ivfsq8)
+  Note     : Q21 was killed early (blocked-search infinite-retry bug) and not re-run.
+
+  AGGREGATE:
+  Accuracy: 15/19 (79%)  |  Avg lat: 137s  |  Avg tok-in: 73.7k  |  Avg tok-out: 7.4k
+  Avg search: 14.3  |  Avg iters: 6.5  |  Avg gold recall: 0.77
+
+  Q     ✓/✗  | Search  Iters | TokIn  TokOut |  Lat(s) | GRec  | Notes
+  ───────────────────────────────────────────────────────────────────────────
+  Q022   ✗   |  35cap     9  | 133k    16k   |   185s  | 0.50  | Gold doc not found at cap
+  Q023   ✓   |    29      8  |  68k    13k   |   159s  | 1.00  |
+  Q024   ✓   |    11     12  | 139k    14k   |   153s  | 0.33  | Was ✗ on flat (IIT Kharagpur)
+  Q025   ✓   |     2      5  |  23k     3k   |    35s  | 1.00  |
+  Q026   ✓   |     1      3  |  18k     5k   |    61s  | 0.75  |
+  Q027   ✓   |    18      6  |  60k     7k   |    85s  | 1.00  |
+  Q028   ✓   |     4      3  |  12k     4k   |    50s  | 1.00  |
+  Q029   ✓   |    17      5  |  36k     6k   |    65s  | 0.50  | Was ✗ on flat (gold not found)
+  Q030   ✓   |     1      2  |   9k     2k   |    26s  | 1.00  |
+  Q031   ✓   |    25     10  | 145k     8k   |    86s  | 1.00  |
+  Q032   ✓   |     2      3  |  13k     2k   |    27s  | 1.00  |
+  Q033   ✗   |  35cap     7  |  84k     7k   |    78s  | 0.50  | Was ✓ on flat; cap hit, wrong ep title
+  Q034   ✓   |     1      3  |  14k     5k   |    57s  | 0.50  |
+  Q035   ✓   |     6      4  |  29k     4k   |    44s  | 0.50  |
+  Q036   ✓   |     1      3  |  11k     2k   |    26s  | 0.50  |
+  Q037   ✗   |  35cap  16cap | 266k    11k   | 1142s   | 1.00  | Found gold, 29 blocked calls, wrong answer
+  Q038   ✓   |     9      7  |  56k     3k   |    34s  | 0.50  |
+  Q039   ✗   |  35cap    13  | 247k    23k   |   218s  | 1.00  | Was ✓ on flat; 90% vs 94%
+  Q040   ✓   |     4      5  |  37k     6k   |    78s  | 1.00  |
+
+========================================================================
+FLAT vs IVFSQ8 (35/16) — Q22–Q40 COMPARISON
+========================================================================
+  Both runs: ismail-gpt-5, reasoning_effort=low, max-search=35, max-iters=16
+  Flat    : run_q21_q40_gpt5_flat_new  (Q22–Q40 subset)
+  IVFSQ8  : run_q22_q40_gpt5_ivfsq8
+  Run date: 2026-07-11
+
+  Metric                     Flat (IndexFlatIP)    IVFSQ8 (nprobe=64)
+  ──────────────────────────────────────────────────────────────────
+  Accuracy               15/19  (79%)              15/19  (79%)
+  Avg latency                144s                    137s
+  Avg tokens in             72.5k                   73.7k
+  Avg tokens out             8.4k                    7.4k
+  Avg search calls           11.8                    14.3
+  Avg iterations              6.8                     6.5
+  Avg gold recall            0.76                    0.77
+  ──────────────────────────────────────────────────────────────────
+
+  Per-question flip table (questions where result changed):
+  Q     Flat   IVFSQ8  | Flat Srch  IVF Srch | Flat GRec  IVF GRec | Notes
+  ──────────────────────────────────────────────────────────────────────────────────
+  Q024   ✗      ✓      |     13        11     |    0.67      0.33   | IVFSQ8 found correct answer with fewer searches
+  Q029   ✗      ✓      |   35cap       17     |    0.00      0.50   | IVFSQ8 found gold; flat searched 35 and missed
+  Q033   ✓      ✗      |     14      35cap    |    1.00      0.50   | Flat found gold; IVFSQ8 hit cap on wrong path
+  Q039   ✓      ✗      |      8      35cap    |    1.00      1.00   | Both found gold; IVFSQ8 extracted 90% vs 94%
+
+  Notes:
+  - Accuracy tied at 79% — both configurations deliver identical end-to-end results.
+  - IVFSQ8 uses more search calls on average (14.3 vs 11.8), reflecting different
+    search paths chosen by the LLM with slightly different retrieval rankings.
+  - Q029 is the strongest IVFSQ8 win: flat burned all 35 searches and never found
+    the gold document; IVFSQ8 found it in 17.
+  - Q039 is the strongest flat win: both had gold_recall=1.00 (found the article)
+    but IVFSQ8 extracted "90%" instead of the correct "94%".
+  - Q037 IVFSQ8: took 1142s — hit both search cap (35) and iter cap (16), generated
+    29 blocked search calls cycling through food words. Reasoning failure.
+  - Conclusion: at n=19, flat and IVFSQ8 are statistically indistinguishable on this
+    GPT-5 agent. IVFSQ8 is 3.8× smaller (428 MB vs 1.64 GB) with no accuracy cost.
+
+========================================================================
+GPT-5 IVFSQ8 (35/16) — Q50–Q119  (70 questions)
+========================================================================
+  Model    : ismail-gpt-5 (Azure, reasoning_effort=low)
+  Index    : FAISS IVFSQ8 (GPU, nlist=1024, nprobe=64), 428 MB
+  Limits   : max-search=35, max-iters=16
+  Run date : 2026-07-12  (run_q50_q119_gpt5_ivfsq8)
+  Snippet  : 500 chars  |  top_k=10
+
+  AGGREGATE:
+  ────────────────────────────────────────────────────────────────────────
+  Accuracy          : 45/70 (64.3%)
+  Avg latency       : 199.9s   (median 83.8s; Q068=2834s and Q111=2344s are outliers)
+  Avg tokens in     : 109,530
+  Avg tokens out    : 9,957
+  Avg iterations    : 8.1
+  Avg search calls  : 14.5
+  Avg getdoc calls  : 2.4
+  Avg delegations   : 0.13
+  Avg gold recall   : 0.720
+  Avg evid recall   : 0.616
+  ────────────────────────────────────────────────────────────────────────
+
+  PER-QUESTION RESULTS:
+  Q     ✓/✗  | Predicted                           Gold                           Lat(s)   TokIn   TokOut  Iters  Srch  GRec  ERec
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Q050   ✓   | Tina Tutkova                        Tina Tutkova                     69s    55k     6k      6     11   0.50  0.60
+  Q051   ✓   | Sandie Hatch                        Sandie Hatch                     43s    48k     3k      6      4   0.00  0.22
+  Q052   ✓   | 19th century; Spain                 19th century; Spain             123s   117k    11k      9     18   1.00  0.80
+  Q053   ✗   | Andrew Elmore                       Mathilda Bjarnehed              104s   230k     9k     16     16   1.00  0.71
+  Q054   ✓   | Melissa Marr                        Melissa Marr                     81s    65k     6k      8      7   1.00  0.83
+  Q055   ✓   | Urza Acharya                        Urza Acharya                    121s   133k    12k      9     19   1.00  1.00
+  Q056   ✓   | Sleepwalker                         Sleepwalker                     725s    57k     7k      7      5   1.00  1.00
+  Q057   ✗   | Unknown                             Greek of the Week               124s   144k    10k     11     35   0.00  0.75
+  Q058   ✓   | La Estrella; Argentina              La Estrella; Argentina           98s    29k     9k      6      3   1.00  1.00
+  Q059   ✗   | Yossi Sheffi                        Richard C. Larson               137s   153k    19k      9     35   1.00  0.50  [truncation]
+  Q060   ✓   | 37kg                                37kg                             27s    25k     2k      4      3   1.00  0.75
+  Q061   ✗   | Unknown                             Dave Chappelle                  302s   452k    27k     16     28   0.00  0.00
+  Q062   ✓   | Equipo de Arquitectura              Equipo de Arquitectura           85s   129k     6k     10     35   0.75  0.75
+  Q063   ✓   | Eno Ebele Jerry                     Eno Ebele Jerry                  71s    55k     6k      8      4   1.00  0.89
+  Q064   ✗   | 126 VITA                            Lyric Geography                  31s    66k     2k      3      7   1.00  0.50
+  Q065   ✗   | Unknown                             Vera Nünning                    293s   441k    25k     14     35   0.00  0.00
+  Q066   ✓   | Sealed                              Sealed                           68s    51k     5k      6      6   1.00  0.75
+  Q067   ✗   | 10th grade                          kindergarten                    173s   197k    13k     16     16   0.00  0.12
+  Q068   ✗   | Unknown                             Jim Hibbert                    2834s   318k    36k     16     32   0.00  0.00  [truncation]
+  Q069   ✓   | Edgar McLean Stevenson Jr.          Edgar McLean Stevenson Jr.      116s    88k    10k      9     21   1.00  0.44
+  Q070   ✗   | Puttnam                             Motshekga                       169s   308k    14k     12     35   0.50  0.50
+  Q071   ✗   | 24.6                                27                               89s   122k     7k     10     35   1.00  0.25
+  Q072   ✗   | Unknown                             Kevin Anderson                  249s   258k    20k      6     35   0.00  0.00
+  Q073   ✗   | 8                                   9                                39s    29k     3k      5      3   0.00  0.50
+  Q074   ✗   | Who Framed Roger Rabbit             The Little Mermaid              109s   238k     8k     14     35   0.50  0.67
+  Q075   ✓   | Thomas Ngomba                       Thomas Ngomba                    29s    17k     2k      4      1   1.00  0.40
+  Q076   ✓   | Ian Solomon                         Ian Solomon                      72s    84k     6k      9     12   1.00  1.00
+  Q077   ✗   | Theodor Geisel                      Manly Hall                      279s   272k    26k     13     35   0.00  0.00
+  Q078   ✓   | Fall of the Queen Bean              Fall of the Queen Bean           74s    48k     6k      7      4   0.00  0.50
+  Q079   ✗   | Opium: A Portrait of the H. Demon   In the Arms of Morpheus...       42s    18k     4k      4      2   1.00  0.67
+  Q080   ✗   | Jae                                 J.K. Rowling                    199s   232k    22k     15     35   0.25  0.20  [truncation]
+  Q081   ✓   | 1798 Monument                       1798 Monument                    77s   123k     7k     12     12   1.00  0.43
+  Q082   ✗   | California Institute of Technology  Stanford University             167s   104k    12k      9     22   1.00  0.67
+  Q083   ✓   | Russell David Lyons                 Russell David Lyons              52s    38k     4k      4      9   1.00  1.00
+  Q084   ✓   | Mando                               Mando                            65s    43k     5k      5     11   1.00  1.00
+  Q085   ✗   | Dolph Ziggler                       Chris Jericho                   351s   246k    34k     15     15   0.33  0.20  [truncation]
+  Q086   ✗   | a small village with a big history  Little Lovely                    25s    15k     2k      4      1   0.00  0.60
+  Q087   ✓   | Osama Heikal                        Osama Heikal                     71s    23k     6k      3      8   0.71  0.71
+  Q088   ✓   | June                                June                             71s    54k     5k      6     22   1.00  0.75
+  Q089   ✓   | Edward Winslow                      Edward Winslow                   45s    29k     3k      4      5   1.00  1.00
+  Q090   ✓   | Tak                                 Tak                              42s    22k     3k      4      1   1.00  0.75
+  Q091   ✓   | Jun                                 Jun                              36s    15k     3k      3      1   0.83  0.83
+  Q092   ✓   | Kwabena Yeboah                      Kwabena Yeboah                   42s    13k     3k      3      1   0.83  0.83
+  Q093   ✓   | Queen Marie of Romania              Queen Marie of Romania          155s   161k    11k      9     10   1.00  1.00
+  Q094   ✓   | Chip Deffaa                         Chip Deffaa                      37s    33k     2k      5      2   0.33  0.38
+  Q095   ✗   | Unknown                             Psychedelics                    119s   213k     8k     16     18   0.00  0.00
+  Q096   ✓   | Jacek Rojowski                      Jacek Rojowski                   83s    74k     7k      7      7   1.00  1.00
+  Q097   ✓   | The Dial                            The Dial                        135s    62k    10k      8      6   1.00  0.89
+  Q098   ✗   | Azra Intizar                        David Kermani                   906s   214k    22k     10     35   0.00  0.00
+  Q099   ✓   | Dead on Site                        Dead on Site                     84s   119k     5k      9     17   1.00  0.75
+  Q100   ✓   | Pragyan Ojha                        Pragyan Ojha                     78s    35k     6k      5      4   1.00  1.00
+  Q101   ✓   | All Fives                           All Fives                        51s    63k     3k      7      6   1.00  0.20
+  Q102   ✗   | Norman Mapeza                       Norman Takanyariwa Mapeza        66s    17k     5k      3      4   1.00  1.00  [name incomplete]
+  Q103   ✓   | The Bangles — Everything            The Bangles, Everything         167s    55k    13k      6     15   1.00  1.00
+  Q104   ✓   | Frederik Christoffel Eloff          Frederik Christoffel Eloff       61s    42k     4k      5      9   1.00  1.00
+  Q105   ✓   | Clare Stainthorp                    Clare Stainthorp                 82s   135k     5k     12     15   0.50  0.43
+  Q106   ✓   | Dosti: Friends Forever              Dosti: Friends Forever           83s    30k     7k      5      3   1.00  1.00
+  Q107   ✗   | iLe                                 Valasia                         287s   194k    21k     11     35   1.00  0.25
+  Q108   ✓   | Rain                                Rain                             40s    27k     3k      5      2   1.00  0.57
+  Q109   ✓   | Ally of Justice Catastor            Ally of Justice Catastor        203s   168k    15k     10     30   1.00  1.00
+  Q110   ✓   | Brice Andrew Larson                 Brice Andrew Larson              36s    12k     3k      3      1   1.00  0.29
+  Q111   ✗   | Saxon                               Death SS                       2344s   162k    51k     12     35   0.17  0.10  [truncation]
+  Q112   ✗   | Guillem Vilella Falgueras           Guille Milkyway                 124s    81k     9k      9      6   0.83  0.75  [pseudonym not known]
+  Q113   ✓   | Tóke Makinwa                        Tóke Makinwa                    119s   102k     9k      9     14   1.00  1.00
+  Q114   ✓   | 23 September 1856                   23 September 1856                72s    89k     5k      4      6   1.00  1.00
+  Q115   ✓   | Anthony Charles Lynton Blair        Anthony Charles Lynton Blair    102s    46k     7k      4     14   1.00  0.86
+  Q116   ✓   | Majida El Roumi                     Majida El Roumi                 201s    76k    16k      7      8   1.00  0.89
+  Q117   ✓   | TENDER                              TENDER                          231s   177k    17k     12     25   1.00  1.00
+  Q118   ✓   | Matthew Arnum Barnor                Matthew Arnum Barnor             68s    50k     5k      6      6   1.00  0.33
+  Q119   ✓   | Amherst College                     Amherst College                  40s    29k     3k      5      4   0.33  0.33
+
+  FAILURE ANALYSIS:
+  - Search limit hit (35) with gold_recall=0.00 : Q057, Q061, Q065, Q072, Q077, Q095, Q098
+  - Search limit hit (35) with gold found        : Q059, Q070, Q071, Q074, Q107
+  - Truncation (>12k tok-out)                    : Q059, Q061, Q068, Q080, Q085, Q111
+  - Gold found but wrong extraction              : Q053, Q064, Q067, Q082, Q102
+  - Non-determinism / reasoning failure          : Q073, Q079, Q086, Q112

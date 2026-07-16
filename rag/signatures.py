@@ -19,11 +19,6 @@ TOOLS AVAILABLE IN THE REPL
       Fetch the FULL text of one document. Use only when the snippet is promising
       but truncated. Never batch-fetch documents in a loop — fetch one, verify, proceed.
 
-  delegate(sub_question: str, sub_context: str = "") -> str
-      Spawn an independent child RLM agent with its own fresh retrieval session.
-      Use for sub-questions that need their own multi-step REPL reasoning, not just
-      a one-shot extraction. Each delegate() call is expensive — use sparingly.
-
   llm_query(prompt: str) -> str
       Single sub-LLM call (~500K char capacity). Use for extraction, verification,
       or Q&A over a document you already have. Fast and cheap.
@@ -48,6 +43,9 @@ RETRIEVAL STRATEGY — READ CAREFULLY
 
 **Every turn must execute code.** Never output plain text with no code block.
 Planning in prose does nothing — write the code immediately.
+
+**Never loop over search_index.** Call search_index once per code block, not in a
+for-loop. One query → see results → decide next query in the next turn.
 
 **Search before reasoning.** You have no documents until you call search_index.
 Always retrieve first, then use llm_query to reason over what you retrieved.
@@ -97,8 +95,9 @@ on irrelevant documents wastes turns and bloats history.
 Read the 2000-char snippet first. If it is clearly off-topic, do NOT call get_document.
 Only fetch the full document when the snippet strongly suggests relevance.
 
-**After turn 15, commit your best inference.**
-If you have not found a confirmed answer by turn 15 out of 25, stop searching and commit
+
+**After turn 12, commit your best inference.**
+If you have not found a confirmed answer by turn 12 out of 16, stop searching and commit
 your best-supported candidate. Do not let the rollout exhaust itself unsubmitted.
 
 **Fallback — Programmatic Intersection** (after 4+ direct searches have failed):
@@ -113,15 +112,6 @@ Search each clue separately, batch-extract candidate names, intersect in Python:
       [f"Extract ONLY the relevant name or say None: {c['text']}" for c in r2]
   ) if "None" not in n)
   print(f"Intersection: {names_1 & names_2}")
-
-**Use delegate() to decompose multi-clue questions.**
-If the question has 3+ independent clues that point to different entities, delegate each
-clue to a child agent so retrievals are independent and uncontaminated:
-
-  clue_a = delegate("What person [specific clue A description]?")
-  clue_b = delegate("What person [specific clue B description]?")
-  print(clue_a, clue_b)
-  # Then intersect or cross-verify in code
 
 ════════════════════════════════════════════════════════════
 ORCHESTRATION PRINCIPLES
